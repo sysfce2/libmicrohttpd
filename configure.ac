@@ -2497,6 +2497,9 @@ AM_CONDITIONAL([MHD_HAVE_TLS_PLUGIN], [[test "x$have_tlsplugin" = xyes]])
 AC_CHECK_HEADERS([zlib.h],[have_zlib=yes],[have_zlib=no], [AC_INCLUDES_DEFAULT])
 AM_CONDITIONAL([HAVE_ZLIB], [[test "x$have_zlib" = xyes]])
 
+AC_CHECK_HEADERS([jansson.h],[have_json=yes],[have_json=no], [AC_INCLUDES_DEFAULT])
+AM_CONDITIONAL([HAVE_JANSSON], [[test "x$have_json" = xyes]])
+
 # Check for generic functions
 MHD_CHECK_FUNC([random],
   [
