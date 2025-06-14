@@ -331,8 +331,10 @@ show_help (void)
   printf ("Response body size options (mutually exclusive):\n");
   printf ("  -E,     --empty           empty response, 0 bytes\n");
   printf ("  -T,     --tiny            tiny response, 3 bytes (default)\n");
-  printf ("  -M,     --medium          medium response, 8 KB\n");
-  printf ("  -L,     --large           large response, 1 MB\n");
+  printf ("  -M,     --medium          medium response, 8 KiB\n");
+  printf ("  -L,     --large           large response, 1 MiB\n");
+  printf ("  -X,     --xlarge          extra large response, 8 MiB\n");
+  printf ("  -J,     --jumbo           jumbo response, 101 MiB\n");
   printf ("\n");
   printf ("Response use options (mutually exclusive):\n");
   printf ("  -S,     --shared          pool of pre-generated shared response\n"
@@ -370,6 +372,8 @@ struct PerfRepl_parameters
   int tiny;
   int medium;
   int large;
+  int xlarge;
+  int jumbo;
   int shared;
   int single;
   int unique;
@@ -381,6 +385,8 @@ struct PerfRepl_parameters
 };
 
 static struct PerfRepl_parameters tool_params = {
+  0,
+  0,
   0,
   0,
   0,
@@ -573,6 +579,18 @@ process_param__empty (const char *param_name)
              "with '-L' or '--large'.\n", param_name);
     return PERF_RPL_PARAM_ERROR;
   }
+  if (tool_params.xlarge)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-X' or '--xlarge'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.jumbo)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-J' or '--jumbo'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
   tool_params.empty = ! 0;
   return '-' == param_name[1] ?
          PERF_RPL_PARAM_FULL_STR :PERF_RPL_PARAM_ONE_CHAR;
@@ -598,6 +616,18 @@ process_param__tiny (const char *param_name)
   {
     fprintf (stderr, "Parameter '%s' cannot be used together "
              "with '-L' or '--large'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.xlarge)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-X' or '--xlarge'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.jumbo)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-J' or '--jumbo'.\n", param_name);
     return PERF_RPL_PARAM_ERROR;
   }
   tool_params.tiny = ! 0;
@@ -627,6 +657,18 @@ process_param__medium (const char *param_name)
              "with '-L' or '--large'.\n", param_name);
     return PERF_RPL_PARAM_ERROR;
   }
+  if (tool_params.xlarge)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-X' or '--xlarge'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.jumbo)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-J' or '--jumbo'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
   tool_params.medium = ! 0;
   return '-' == param_name[1] ?
          PERF_RPL_PARAM_FULL_STR :PERF_RPL_PARAM_ONE_CHAR;
@@ -654,7 +696,97 @@ process_param__large (const char *param_name)
              "with '-M' or '--medium'.\n", param_name);
     return PERF_RPL_PARAM_ERROR;
   }
+  if (tool_params.xlarge)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-X' or '--xlarge'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.jumbo)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-J' or '--jumbo'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
   tool_params.large = ! 0;
+  return '-' == param_name[1] ?
+         PERF_RPL_PARAM_FULL_STR :PERF_RPL_PARAM_ONE_CHAR;
+}
+
+
+static enum PerfRepl_param_result
+process_param__xlarge (const char *param_name)
+{
+  if (tool_params.empty)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-E' or '--empty'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.tiny)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-T' or '--tiny'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.medium)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-M' or '--medium'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.large)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-L' or '--large'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.jumbo)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-J' or '--jumbo'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  tool_params.xlarge = ! 0;
+  return '-' == param_name[1] ?
+         PERF_RPL_PARAM_FULL_STR :PERF_RPL_PARAM_ONE_CHAR;
+}
+
+
+static enum PerfRepl_param_result
+process_param__jumbo (const char *param_name)
+{
+  if (tool_params.empty)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-E' or '--empty'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.tiny)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-T' or '--tiny'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.medium)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-M' or '--medium'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.large)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-L' or '--large'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  if (tool_params.xlarge)
+  {
+    fprintf (stderr, "Parameter '%s' cannot be used together "
+             "with '-X' or '--xlarge'.\n", param_name);
+    return PERF_RPL_PARAM_ERROR;
+  }
+  tool_params.jumbo = ! 0;
   return '-' == param_name[1] ?
          PERF_RPL_PARAM_FULL_STR :PERF_RPL_PARAM_ONE_CHAR;
 }
@@ -844,6 +976,10 @@ process_short_param (const char *param, const char *next_param)
     return process_param__medium ("-M");
   else if ('L' == param_chr)
     return process_param__large ("-L");
+  else if ('X' == param_chr)
+    return process_param__xlarge ("-X");
+  else if ('J' == param_chr)
+    return process_param__jumbo ("-J");
   else if ('S' == param_chr)
     return process_param__shared ("-S");
   else if ('I' == param_chr)
@@ -934,6 +1070,12 @@ process_long_param (const char *param, const char *next_param)
   else if ((MHD_STATICSTR_LEN_ ("large") == param_len) &&
            (0 == memcmp (param, "large", MHD_STATICSTR_LEN_ ("large"))))
     return process_param__large ("--large");
+  else if ((MHD_STATICSTR_LEN_ ("xlarge") == param_len) &&
+           (0 == memcmp (param, "xlarge", MHD_STATICSTR_LEN_ ("xlarge"))))
+    return process_param__xlarge ("--xlarge");
+  else if ((MHD_STATICSTR_LEN_ ("jumbo") == param_len) &&
+           (0 == memcmp (param, "jumbo", MHD_STATICSTR_LEN_ ("jumbo"))))
+    return process_param__jumbo ("--jumbo");
   else if ((MHD_STATICSTR_LEN_ ("shared") == param_len) &&
            (0 == memcmp (param, "shared", MHD_STATICSTR_LEN_ ("shared"))))
     return process_param__shared ("--shared");
@@ -1172,10 +1314,10 @@ check_param__poll (void)
 
 
 static void
-check_param__empty_tiny_medium_large (void)
+check_param__empty_tiny_medium_large_xlarge_jumbo (void)
 {
   if (0 == (tool_params.empty | tool_params.tiny | tool_params.medium
-            | tool_params.large))
+            | tool_params.large | tool_params.xlarge | tool_params.jumbo))
     tool_params.tiny = ! 0;
 }
 
@@ -1235,11 +1377,34 @@ check_apply_params (void)
     return PERF_RPL_ERR_CODE_BAD_PARAM;
   if (! check_param__poll ())
     return PERF_RPL_ERR_CODE_BAD_PARAM;
-  check_param__empty_tiny_medium_large ();
+  check_param__empty_tiny_medium_large_xlarge_jumbo ();
   check_param__shared_single_unique ();
   if (! check_param__connections ())
     return PERF_RPL_ERR_CODE_BAD_PARAM;
   return 0;
+}
+
+
+static uint64_t
+mini_rnd (void)
+{
+  /* Simple xoshiro256+ implementation */
+  static uint64_t s[4] = {
+    0xE220A8397B1DCDAFuLL, 0x6E789E6AA1B965F4uLL,
+    0x06C45D188009454FuLL, 0xF88BB8A8724C81ECuLL
+  };     /* Good enough for static initialisation */
+
+  const uint64_t ret = s[0] + s[3];
+  const uint64_t t = s[1] << 17;
+
+  s[2] ^= s[0];
+  s[3] ^= s[1];
+  s[1] ^= s[2];
+  s[0] ^= s[3];
+  s[2] ^= t;
+  s[3] = ((s[3] << 45u) | (s[3] >> (64u - 45u)));
+
+  return ret;
 }
 
 
@@ -1267,7 +1432,7 @@ init_response_body_data (void)
       fprintf (stderr, "Failed to allocate memory.\n");
       return 0;
     }
-    if (tool_params.medium)
+    if (16u * 1024u >= body_dyn_size)
     {
       /* Fill the body with HTML-like content */
       size_t pos;
@@ -1295,13 +1460,38 @@ init_response_body_data (void)
       pos += filler_pos;
       memcpy (body_dyn + pos, body_footer, MHD_STATICSTR_LEN_ (body_footer));
     }
-    else
+    else if (2u * 1024u * 1024u >= body_dyn_size)
     {
       /* Fill the body with binary-like content */
       size_t pos;
       for (pos = 0; pos < body_dyn_size; ++pos)
       {
         body_dyn[pos] = (char) (unsigned char) (255U - pos % 256U);
+      }
+    }
+    else
+    {
+      /* Fill the body with pseudo-random binary-like content */
+      size_t pos;
+      uint64_t rnd_data;
+      for (pos = 0; pos < body_dyn_size - body_dyn_size % 8;
+           pos += 8)
+      {
+        rnd_data = mini_rnd ();
+        body_dyn[pos + 0] = (char) (unsigned char) (rnd_data >> 0);
+        body_dyn[pos + 1] = (char) (unsigned char) (rnd_data >> 8);
+        body_dyn[pos + 2] = (char) (unsigned char) (rnd_data >> 16);
+        body_dyn[pos + 3] = (char) (unsigned char) (rnd_data >> 24);
+        body_dyn[pos + 4] = (char) (unsigned char) (rnd_data >> 32);
+        body_dyn[pos + 5] = (char) (unsigned char) (rnd_data >> 40);
+        body_dyn[pos + 6] = (char) (unsigned char) (rnd_data >> 48);
+        body_dyn[pos + 7] = (char) (unsigned char) (rnd_data >> 56);
+      }
+      rnd_data = mini_rnd ();
+      for ((void) pos; pos < body_dyn_size; ++pos)
+      {
+        body_dyn[pos] = (char) (unsigned char) (rnd_data);
+        rnd_data >>= 8u;
       }
     }
   }
@@ -1348,6 +1538,10 @@ init_data (void)
     body_dyn_size = 8U * 1024U;
   else if (tool_params.large)
     body_dyn_size = 1024U * 1024U;
+  else if (tool_params.xlarge)
+    body_dyn_size = 8U * 1024U * 1024U;
+  else if (tool_params.jumbo)
+    body_dyn_size = 101U * 1024U * 1024U;
   else
     body_dyn_size = 0;
 
@@ -1686,9 +1880,13 @@ get_mhd_response_size (void)
   else if (tool_params.tiny)
     return "3 bytes (tiny)";
   else if (tool_params.medium)
-    return "8 KB (medium)";
+    return "8 KiB (medium)";
   else if (tool_params.large)
-    return "1 MB (large)";
+    return "1 MiB (large)";
+  else if (tool_params.xlarge)
+    return "8 MiB (xlarge)";
+  else if (tool_params.jumbo)
+    return "101 MiB (jumbo)";
   return "!!internal error!!";
 }
 
