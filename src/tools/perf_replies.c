@@ -212,9 +212,9 @@ static unsigned int num_threads = 0;
 static unsigned int
 get_num_threads (void)
 {
-#if 0  /* disalbed code */
+#if 0  /* disabled code */
   static const unsigned int max_threads = 32;
-#endif /* disalbed code */
+#endif /* disabled code */
   if (0 < num_threads)
     return num_threads;
 
@@ -238,14 +238,14 @@ get_num_threads (void)
       num_threads = num_proc_cpus;
     }
   }
-#if 0  /* disalbed code */
+#if 0  /* disabled code */
   if (max_threads < num_threads)
   {
-    printf ("Number of threads are limited to %u as more threads "
-            "are unlikely to improve the performance.\n", max_threads);
+    printf ("Number of threads is limited to %u as more threads "
+            "are unlikely to improve performance.\n", max_threads);
     num_threads = max_threads;
   }
-#endif /* disalbed code */
+#endif /* disabled code */
 
   return num_threads;
 }
@@ -313,12 +313,12 @@ show_help (void)
   printf ("Usage: %s [OPTIONS] [PORT_NUMBER]\n", self_name);
   printf ("Start MHD-based web-server optimised for fast replies.\n");
   printf ("\n");
-  printf ("Threads options (mutually exclusive):\n");
+  printf ("Threading options (mutually exclusive):\n");
   printf ("  -A,     --all-cpus        use all available CPU cores (for \n"
           "                            testing with remote client)\n");
   printf ("  -t NUM, --threads=NUM     use NUM threads\n");
   printf ("  -P,     --thread-per-conn use thread-per-connection mode,\n"
-          "                            the number of threads are limited only\n"
+          "                            the number of threads is limited only\n"
           "                            by the number of connection\n");
   printf ("\n");
   printf ("Force polling function (mutually exclusive):\n");
@@ -1646,7 +1646,7 @@ answer_shared_response (void *cls,
 
   if (NULL == *req_cls)
   {
-    /* The fist call */
+    /* The first call */
     *req_cls = (void *) &marker;
     /* Do not send reply yet. No error. */
     return MHD_YES;
@@ -1658,7 +1658,7 @@ answer_shared_response (void *cls,
   /* This kind of operation does not guarantee that numbers are not reused
      in parallel threads, when processed simultaneously, but this should not
      be a big problem, as it just slow down replies a bit due to
-     responses locking. */
+     response locking. */
   resp_index = (last_index++) % num_resps;
   return MHD_queue_response (connection, MHD_HTTP_OK, resps[resp_index]);
 }
@@ -1681,7 +1681,7 @@ answer_single_response (void *cls,
 
   if (NULL == *req_cls)
   {
-    /* The fist call */
+    /* The first call */
     *req_cls = (void *) &marker;
     /* Do not send reply yet. No error. */
     return MHD_YES;
@@ -1713,7 +1713,7 @@ answer_unique_empty_response (void *cls,
 
   if (NULL == *req_cls)
   {
-    /* The fist call */
+    /* The first call */
     *req_cls = (void *) &marker;
     /* Do not send reply yet. No error. */
     return MHD_YES;
@@ -1754,7 +1754,7 @@ answer_unique_tiny_response (void *cls,
 
   if (NULL == *req_cls)
   {
-    /* The fist call */
+    /* The first call */
     *req_cls = (void *) &marker;
     /* Do not send reply yet. No error. */
     return MHD_YES;
@@ -1796,7 +1796,7 @@ answer_unique_dyn_response (void *cls,
 
   if (NULL == *req_cls)
   {
-    /* The fist call */
+    /* The first call */
     *req_cls = (void *) &marker;
     /* Do not send reply yet. No error. */
     return MHD_YES;
@@ -1829,12 +1829,12 @@ print_perf_warnings (void)
   newline_needed |=  ! 0;
 #endif /* _DEBUG */
 #if defined(__GNUC__) && ! defined (__OPTIMIZE__)
-  fprintf (stderr, "WARNING: The tools is compiled without enabled compiler "
+  fprintf (stderr, "WARNING: This tool is compiled without enabled compiler "
            "optimisations, the performance is suboptimal.\n");
   newline_needed |=  ! 0;
 #endif /* __GNUC__ && ! __OPTIMIZE__ */
 #if defined(__GNUC__) && defined (__OPTIMIZE_SIZE__)
-  fprintf (stderr, "WARNING: The tools is compiled with size-optimisations, "
+  fprintf (stderr, "WARNING: This tool is compiled with size-optimisations, "
            "the performance is suboptimal.\n");
 #endif /* __GNUC__ && ! __OPTIMIZE__ */
 #if MHD_VERSION >= 0x00097701
