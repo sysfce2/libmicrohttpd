@@ -1594,7 +1594,7 @@ init_data (void)
     return 0; /* Success */
 
   /* Cleanup */
-  while (--i < num_resps)
+  while (i-- != 0)
     MHD_destroy_response (resps[i]);
   free (resps);
   resps = NULL;
