@@ -23,7 +23,7 @@
 #
 AC_PREREQ([2.64])
 LT_PREREQ([2.4.0])
-AC_INIT([GNU libmicrohttpd],[1.0.1],[libmicrohttpd@gnu.org])
+AC_INIT([GNU libmicrohttpd],[1.0.2],[libmicrohttpd@gnu.org])
 AC_CONFIG_AUX_DIR([build-aux])
 MHD_AUX_DIR='build-aux' # Must be set to the same value as in the previous line
 AC_CONFIG_HEADERS([MHD_config.h])
@@ -31,7 +31,7 @@ AC_CONFIG_MACRO_DIR([m4])
 m4_pattern_forbid([^_?MHD_[A-Z_]+_CC_])dnl
 
 LIB_VERSION_CURRENT=74
-LIB_VERSION_REVISION=1
+LIB_VERSION_REVISION=2
 LIB_VERSION_AGE=62
 AC_SUBST([LIB_VERSION_CURRENT])
 AC_SUBST([LIB_VERSION_REVISION])
@@ -4512,7 +4512,7 @@ AS_VAR_IF([enable_tools],["yes"],
         i][f (1 != pstat_getdynamic(&psd_data, sizeof(psd_data), (size_t)1, 0))
           return 2;
         i][f (0 >= psd_data.psd_proc_cnt)
-          return 3; 
+          return 3;
       ]]
     )
     MHD_CHECK_FUNC([vxCpuEnabledGet],[[#include <vxCpuLib.h>]],
@@ -5928,7 +5928,6 @@ doc/examples/Makefile
 m4/Makefile
 src/Makefile
 src/include/Makefile
-src/lib/Makefile
 src/microhttpd/Makefile
 src/microhttpd_ws/Makefile
 src/examples/Makefile
