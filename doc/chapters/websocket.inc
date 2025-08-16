@@ -308,7 +308,7 @@ access_handler (void *cls,
 {
   static int aptr;
   struct MHD_Response *response;
-  int ret;
+  enum MHD_Result ret;
 
   (void) cls;               /* Unused. Silent compiler warning. */
   (void) upload_data;       /* Unused. Silent compiler warning. */

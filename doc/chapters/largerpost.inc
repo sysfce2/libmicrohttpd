@@ -1,12 +1,12 @@
-The previous chapter introduced a way to upload data to the server, but the developed example program 
+The previous chapter introduced a way to upload data to the server, but the developed example program
 has some shortcomings, such as not being able to handle larger chunks of data. In this chapter, we
-are going to discuss a more advanced server program that allows clients to upload a file in order to 
+are going to discuss a more advanced server program that allows clients to upload a file in order to
 have it stored on the server's filesystem. The server shall also watch and limit the number of
 clients concurrently uploading, responding with a proper busy message if necessary.
 
 
 @heading Prepared answers
-We choose to operate the server with the @code{SELECT_INTERNALLY} method. This makes it easier to 
+We choose to operate the server with the @code{SELECT_INTERNALLY} method. This makes it easier to
 synchronize the global states at the cost of possible delays for other connections if the processing
 of a request is too slow. One of these variables that needs to be shared for all connections is the
 total number of clients that are uploading.
@@ -20,13 +20,13 @@ static unsigned int    nr_of_uploading_clients = 0;
 If there are too many clients uploading, we want the server to respond to all requests with a busy
 message.
 @verbatim
-const char* busypage = 
+const char* busypage =
   "<html><body>This server is busy, please try again later.</body></html>";
 @end verbatim
 @noindent
 
-Otherwise, the server will send a @emph{form} that informs the user of the current number of uploading clients,   
-and ask her to pick a file on her local filesystem which is to be uploaded. 
+Otherwise, the server will send a @emph{form} that informs the user of the current number of uploading clients,
+and ask her to pick a file on her local filesystem which is to be uploaded.
 @verbatim
 const char* askpage = "<html><body>\n\
                        Upload a file, please!<br>\n\
@@ -46,31 +46,31 @@ const char* completepage = "<html><body>The upload has been completed.</body></h
 @noindent
 
 We want the server to report internal errors, such as memory shortage or file access problems,
-adequately. 
+adequately.
 @verbatim
-const char* servererrorpage 
+const char* servererrorpage
   = "<html><body>An internal server error has occurred.</body></html>";
 const char* fileexistspage
   = "<html><body>This file already exists.</body></html>";
 @end verbatim
 @noindent
 
-It would be tolerable to send all these responses undifferentiated with a @code{200 HTTP_OK} 
-status code but in order to improve the @code{HTTP} conformance of our server a bit, we extend the 
-@code{send_page} function so that it accepts individual status codes. 
+It would be tolerable to send all these responses undifferentiated with a @code{200 HTTP_OK}
+status code but in order to improve the @code{HTTP} conformance of our server a bit, we extend the
+@code{send_page} function so that it accepts individual status codes.
 
 @verbatim
-static int 
-send_page (struct MHD_Connection *connection, 
+static enum MHD_Result
+send_page (struct MHD_Connection *connection,
 	   const char* page, int status_code)
 {
-  int ret;
+  enum MHD_Result ret;
   struct MHD_Response *response;
-  
-  response = MHD_create_response_from_buffer (strlen (page), (void*) page, 
+
+  response = MHD_create_response_from_buffer (strlen (page), (void*) page,
   	     				      MHD_RESPMEM_MUST_COPY);
   if (!response) return MHD_NO;
- 
+
   ret = MHD_queue_response (connection, status_code, response);
   MHD_destroy_response (response);
 
@@ -84,29 +84,29 @@ become clear later.
 
 
 @heading Connection cycle
-The decision whether the server is busy or not is made right at the beginning of the connection. To 
-do that at this stage is especially important for @emph{POST} requests because if no response is 
+The decision whether the server is busy or not is made right at the beginning of the connection. To
+do that at this stage is especially important for @emph{POST} requests because if no response is
 queued at this point, and @code{MHD_YES} returned, @emph{MHD} will not sent any queued messages until
 a postprocessor has been created and the post iterator is called at least once.
 
 @verbatim
-static int 
-answer_to_connection (void *cls, struct MHD_Connection *connection, 
-		      const char *url, 
-                      const char *method, const char *version, 
-		      const char *upload_data, 
+static enum MHD_Result
+answer_to_connection (void *cls, struct MHD_Connection *connection,
+		      const char *url,
+                      const char *method, const char *version,
+		      const char *upload_data,
                       size_t *upload_data_size, void **req_cls)
 {
-  if (NULL == *req_cls) 
+  if (NULL == *req_cls)
     {
       struct connection_info_struct *con_info;
 
-      if (nr_of_uploading_clients >= MAXCLIENTS) 
+      if (nr_of_uploading_clients >= MAXCLIENTS)
         return send_page(connection, busypage, MHD_HTTP_SERVICE_UNAVAILABLE);
 @end verbatim
 @noindent
 
-If the server is not busy, the @code{connection_info} structure is initialized as usual, with 
+If the server is not busy, the @code{connection_info} structure is initialized as usual, with
 the addition of a filepointer for each connection.
 
 @verbatim
@@ -114,44 +114,44 @@ the addition of a filepointer for each connection.
       if (NULL == con_info) return MHD_NO;
       con_info->fp = 0;
 
-      if (0 == strcmp (method, "POST")) 
-        {  
+      if (0 == strcmp (method, "POST"))
+        {
           ...
-        } 
+        }
       else con_info->connectiontype = GET;
 
       *req_cls = (void*) con_info;
- 
+
       return MHD_YES;
     }
 @end verbatim
 @noindent
 
-For @emph{POST} requests, the postprocessor is created and we register a new uploading client. From 
+For @emph{POST} requests, the postprocessor is created and we register a new uploading client. From
 this point on, there are many possible places for errors to occur that make it necessary to interrupt
-the uploading process. We need a means of having the proper response message ready at all times. 
+the uploading process. We need a means of having the proper response message ready at all times.
 Therefore, the @code{connection_info} structure is extended to hold the most current response
 message so that whenever a response is sent, the client will get the most informative message. Here,
 the structure is initialized to "no error".
 @verbatim
-      if (0 == strcmp (method, "POST")) 
-        {  
-          con_info->postprocessor 
-	    = MHD_create_post_processor (connection, POSTBUFFERSIZE, 
-                                         iterate_post, (void*) con_info);   
+      if (0 == strcmp (method, "POST"))
+        {
+          con_info->postprocessor
+	    = MHD_create_post_processor (connection, POSTBUFFERSIZE,
+                                         iterate_post, (void*) con_info);
 
-          if (NULL == con_info->postprocessor) 
+          if (NULL == con_info->postprocessor)
             {
-              free (con_info); 
+              free (con_info);
               return MHD_NO;
             }
 
           nr_of_uploading_clients++;
-          
+
           con_info->connectiontype = POST;
           con_info->answercode = MHD_HTTP_OK;
           con_info->answerstring = completepage;
-        } 
+        }
       else con_info->connectiontype = GET;
 @end verbatim
 @noindent
@@ -160,14 +160,13 @@ If the connection handler is called for the second time, @emph{GET} requests wil
 the @emph{form}. We can keep the buffer under function scope, because we asked @emph{MHD} to make its
 own copy of it for as long as it is needed.
 @verbatim
-  if (0 == strcmp (method, "GET")) 
+  if (0 == strcmp (method, "GET"))
     {
-      int ret;
       char buffer[1024];
-        
+
       sprintf (buffer, askpage, nr_of_uploading_clients);
-      return send_page (connection, buffer, MHD_HTTP_OK);     
-    } 
+      return send_page (connection, buffer, MHD_HTTP_OK);
+    }
 @end verbatim
 @noindent
 
@@ -177,22 +176,22 @@ example, except the more flexible content of the responses. The @emph{POST} data
 there is none left and the execution falls through to return an error page if the connection
 constituted no expected request method.
 @verbatim
-  if (0 == strcmp (method, "POST")) 
+  if (0 == strcmp (method, "POST"))
     {
       struct connection_info_struct *con_info = *req_cls;
-       
-      if (0 != *upload_data_size) 
-        { 
+
+      if (0 != *upload_data_size)
+        {
           MHD_post_process (con_info->postprocessor,
 	                    upload_data, *upload_data_size);
           *upload_data_size = 0;
-          
+
           return MHD_YES;
-        } 
-      else 
-        return send_page (connection, con_info->answerstring, 
+        }
+      else
+        return send_page (connection, con_info->answerstring,
 	       		  con_info->answercode);
-    } 
+    }
 
   return send_page(connection, errorpage, MHD_HTTP_BAD_REQUEST);
 }
@@ -206,11 +205,11 @@ several times now. This means that for any given connection (there might be seve
 the posted data has to be written to the correct file. That is why we store a file handle in every
 @code{connection_info}, so that the it is preserved between successive iterations.
 @verbatim
-static int 
-iterate_post (void *coninfo_cls, enum MHD_ValueKind kind, 
+static enum MHD_Result
+iterate_post (void *coninfo_cls, enum MHD_ValueKind kind,
 	      const char *key,
 	      const char *filename, const char *content_type,
-              const char *transfer_encoding, const char *data, 
+              const char *transfer_encoding, const char *data,
 	      uint64_t off, size_t size)
 {
   struct connection_info_struct *con_info = coninfo_cls;
@@ -249,19 +248,19 @@ race between the two "fopen" calls, but we will overlook this for portability sa
           con_info->answercode = MHD_HTTP_FORBIDDEN;
           return MHD_NO;
         }
-      
+
       con_info->fp = fopen (filename, "ab");
-      if (!con_info->fp) return MHD_NO;    
+      if (!con_info->fp) return MHD_NO;
     }
 @end verbatim
 @noindent
 
 
-Occasionally, the iterator function will be called even when there are 0 new bytes to process. The 
+Occasionally, the iterator function will be called even when there are 0 new bytes to process. The
 server only needs to write data to the file if there is some.
 @verbatim
-if (size > 0) 
-    {  
+if (size > 0)
+    {
       if (!fwrite (data, size, sizeof(char), con_info->fp))
         return MHD_NO;
     }
@@ -283,7 +282,8 @@ be set to success again. If the upload has finished, this iterator function will
 The new client was registered when the postprocessor was created. Likewise, we unregister the client
 on destroying the postprocessor when the request is completed.
 @verbatim
-void request_completed (void *cls, struct MHD_Connection *connection, 
+void
+request_completed (void *cls, struct MHD_Connection *connection,
      		        void **req_cls,
                         enum MHD_RequestTerminationCode toe)
 {
@@ -293,17 +293,17 @@ void request_completed (void *cls, struct MHD_Connection *connection,
 
   if (con_info->connectiontype == POST)
     {
-      if (NULL != con_info->postprocessor) 
+      if (NULL != con_info->postprocessor)
         {
-          MHD_destroy_post_processor (con_info->postprocessor); 
+          MHD_destroy_post_processor (con_info->postprocessor);
           nr_of_uploading_clients--;
         }
 
-      if (con_info->fp) fclose (con_info->fp); 
+      if (con_info->fp) fclose (con_info->fp);
     }
 
   free (con_info);
-  *req_cls = NULL;      
+  *req_cls = NULL;
 }
 @end verbatim
 @noindent

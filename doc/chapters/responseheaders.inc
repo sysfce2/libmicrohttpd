@@ -1,7 +1,7 @@
 Now that we are able to inspect the incoming request in great detail,
 this chapter discusses the means to enrich the outgoing responses likewise.
 
-As you have learned in the @emph{Hello, Browser} chapter, some obligatory 
+As you have learned in the @emph{Hello, Browser} chapter, some obligatory
 header fields are added and set automatically for simple responses by the library
 itself but if more advanced features are desired, additional fields have to be created.
 One of the possible fields is the content type field and an example will be developed around it.
@@ -9,13 +9,13 @@ This will lead to an application capable of correctly serving different types of
 
 
 When we responded with HTML page packed in the static string previously, the client had no choice
-but guessing about how to handle the response, because the server had not told him. 
+but guessing about how to handle the response, because the server had not told him.
 What if we had sent a picture or a sound file?  Would the message have been understood
 or merely been displayed as an endless stream of random characters in the browser?
 This is what the mime content types are for. The header of the response is extended
-by certain information about how the data is to be interpreted. 
+by certain information about how the data is to be interpreted.
 
-To introduce the concept, a picture of the format @emph{PNG} will be sent to the client 
+To introduce the concept, a picture of the format @emph{PNG} will be sent to the client
 and labeled accordingly with @code{image/png}.
 Once again, we can base the new example on the @code{hellobrowser} program.
 
@@ -23,22 +23,22 @@ Once again, we can base the new example on the @code{hellobrowser} program.
 #define FILENAME "picture.png"
 #define MIMETYPE "image/png"
 
-static int 
-answer_to_connection (void *cls, struct MHD_Connection *connection, 
-		      const char *url, 
-                      const char *method, const char *version, 
-		      const char *upload_data, 
+static enum MHD_Result
+answer_to_connection (void *cls, struct MHD_Connection *connection,
+		      const char *url,
+                      const char *method, const char *version,
+		      const char *upload_data,
               	      size_t *upload_data_size, void **req_cls)
 {
   unsigned char *buffer = NULL;
   struct MHD_Response *response;
 @end verbatim
 @noindent
- 
+
 We want the program to open the file for reading and determine its size:
 @verbatim
   int fd;
-  int ret;
+  enum MHD_Result ret;
   struct stat sbuf;
 
   if (0 != strcmp (method, "GET"))
@@ -56,15 +56,15 @@ We want the program to open the file for reading and determine its size:
 When dealing with files, there is a lot that could go wrong on the
 server side and if so, the client should be informed with @code{MHD_HTTP_INTERNAL_SERVER_ERROR}.
 
-@verbatim 
+@verbatim
       /* error accessing file */
      if (fd != -1) close (fd);
       const char *errorstr =
         "<html><body>An internal server error has occurred!\
                               </body></html>";
       response =
-	MHD_create_response_from_buffer (strlen (errorstr), 
-				         (void *) errorstr, 
+	MHD_create_response_from_buffer (strlen (errorstr),
+				         (void *) errorstr,
 				         MHD_RESPMEM_PERSISTENT);
       if (response)
         {
@@ -77,25 +77,25 @@ server side and if so, the client should be informed with @code{MHD_HTTP_INTERNA
         }
       else
         return MHD_NO;
-  if (!ret) 
+  if (!ret)
     {
       const char *errorstr = "<html><body>An internal server error has occurred!\
                               </body></html>";
 
       if (buffer) free(buffer);
-    
+
       response = MHD_create_response_from_buffer (strlen(errorstr), (void*) errorstr,
                                                   MHD_RESPMEM_PERSISTENT);
 
       if (response)
-        {     
-          ret = MHD_queue_response (connection, 
-	      			    MHD_HTTP_INTERNAL_SERVER_ERROR, 
+        {
+          ret = MHD_queue_response (connection,
+	      			    MHD_HTTP_INTERNAL_SERVER_ERROR,
 				    response);
           MHD_destroy_response (response);
 
-          return MHD_YES;    
-        } 
+          return MHD_YES;
+        }
       else return MHD_NO;
     }
 @end verbatim
@@ -128,8 +128,8 @@ meta data about the content. Aware of the field's name we want to add, it is as 
 MHD_add_response_header(response, "Content-Type", MIMETYPE);
 @end verbatim
 @noindent
-We do not have to append a colon expected by the protocol behind the first 
-field---@emph{GNU libhttpdmicro} will take care of this. 
+We do not have to append a colon expected by the protocol behind the first
+field---@emph{GNU libhttpdmicro} will take care of this.
 
 The function finishes with the well-known lines
 @verbatim
@@ -150,7 +150,7 @@ already defined as macros. Thus, we could have written @code{MHD_HTTP_HEADER_CON
 of @code{"Content-Type"} as well. However, one is not limited to these standard headers and could
 add custom response headers without violating the protocol. Whether, and how, the client would react
 to these custom header is up to the receiver. Likewise, the client is allowed to send custom request
-headers to the server as well, opening up yet more possibilities how client and server could 
+headers to the server as well, opening up yet more possibilities how client and server could
 communicate with each other.
 
 The method of creating the response from a file on disk only works for static content.
@@ -162,31 +162,31 @@ Serving dynamically created responses will be a topic of a future chapter.
 @item
 Remember that the original program was written under a few assumptions---a static response
 using a local file being one of them. In order to simulate a very large or hard to reach file that cannot be provided
-instantly, postpone the queuing in the callback with the @code{sleep} function for 30 seconds 
+instantly, postpone the queuing in the callback with the @code{sleep} function for 30 seconds
 @emph{if} the file @code{/big.png} is requested (but deliver the same as above). A request for
 @code{/picture.png} should provide just the same but without any artificial delays.
 
 Now start two instances of your browser (or even use two machines) and see how the second client
 is put on hold while the first waits for his request on the slow file to be fulfilled.
 
-Finally, change the sourcecode to use @code{MHD_USE_THREAD_PER_CONNECTION} when the daemon is 
+Finally, change the sourcecode to use @code{MHD_USE_THREAD_PER_CONNECTION} when the daemon is
 started and try again.
 
 
 @item
-Did you succeed in implementing the clock exercise yet? This time, let the server save the 
+Did you succeed in implementing the clock exercise yet? This time, let the server save the
 program's start time @code{t} and implement a response simulating a countdown that reaches 0 at
 @code{t+60}. Returning a message saying on which point the countdown is, the response should
 ultimately be to reply "Done" if the program has been running long enough,
 
 An unofficial, but widely understood, response header line is @code{Refresh: DELAY; url=URL} with
-the uppercase words substituted to tell the client it should request the given resource after 
+the uppercase words substituted to tell the client it should request the given resource after
 the given delay again. Improve your program in that the browser (any modern browser should work)
 automatically reconnects and asks for the status again every 5 seconds or so. The URL would have
 to be composed so that it begins with "http://", followed by the @emph{URI} the server is reachable
 from the client's point of view.
 
-Maybe you want also to visualize the countdown as a status bar by creating a 
+Maybe you want also to visualize the countdown as a status bar by creating a
 @code{<table>} consisting of one row and @code{n} columns whose fields contain small images of either
 a red or a green light.
 
