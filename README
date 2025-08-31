@@ -71,27 +71,4 @@ of users using it on vxWorks.
 Development Status
 ==================
 
-This is a beta release for libmicrohttpd.  Before declaring the
-library stable, we should have testcases for the following features:
-
-- HTTP/1.1 pipelining (need to figure out how to ensure curl pipelines
-  -- and it seems libcurl has issues with pipelining,
-  see http://curl.haxx.se/mail/lib-2007-12/0248.html)
-- resource limit enforcement
-- client queuing early response, suppressing 100 CONTINUE
-- chunked encoding to validate handling of footers
-- more testing for SSL support
-- MHD basic and digest authentication
-
-In particular, the following functions are not covered by 'make check':
-- mhd_panic_std (mhd_panic.c); special case (abort)
-- parse_options (daemon.c)
-- MHD_get_version (daemon.c)
-
-
-Note that the working library is in src/microhttpd/ with the API in
-src/include/microhttpd.h.  An *experimental* (read: not yet working
-at all) newer implementation is in src/lib/, with the new API in
-src/include/microhttpd2.h.  The experimental code will need MUCH
-more testing and development, you are strongly advised to stick
-to microhttpd.h unless you are a MHD developer!
+This is a stable release for libmicrohttpd.
