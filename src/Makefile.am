@@ -9,11 +9,6 @@ SUBDIRS += testzzuf
 endif
 endif
 
-# Finally (last!) also build experimental lib...
-if HAVE_EXPERIMENTAL
-SUBDIRS += microhttpd_ws
-endif
-
 if BUILD_EXAMPLES
 SUBDIRS += examples
 endif
