@@ -141,15 +141,15 @@ answer_to_connection (void *cls,
                       size_t *upload_data_size,
                       void **req_cls)
 {
+  struct connection_info_struct *con_info = *req_cls;
+
   (void) cls;               /* Unused. Silent compiler warning. */
   (void) url;               /* Unused. Silent compiler warning. */
   (void) version;           /* Unused. Silent compiler warning. */
-
-  if (NULL == *req_cls)
+  if (NULL == con_info)
   {
-    struct connection_info_struct *con_info;
-
     con_info = malloc (sizeof (struct connection_info_struct));
+    *req_cls = (void *) con_info;
     if (NULL == con_info)
       return MHD_NO;
     con_info->answerstring = NULL;
@@ -172,8 +172,6 @@ answer_to_connection (void *cls,
     {
       con_info->connectiontype = GET;
     }
-    *req_cls = (void *) con_info;
-
     return MHD_YES;
   }
   if (GET == con_info->connectiontype)
