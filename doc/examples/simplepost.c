@@ -181,8 +181,6 @@ answer_to_connection (void *cls,
   }
   if (POST == con_info->connectiontype)
   {
-    struct connection_info_struct *con_info = *req_cls;
-
     if (0 != *upload_data_size)
     {
       if (MHD_YES !=
