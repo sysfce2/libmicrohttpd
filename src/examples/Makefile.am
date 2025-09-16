@@ -39,11 +39,6 @@ noinst_PROGRAMS = \
  fileserver_example_external_select \
  refuse_post_example
 
-if HAVE_EXPERIMENTAL
-noinst_PROGRAMS += \
-  websocket_chatserver_example
-endif
-
 if MHD_HAVE_EPOLL
 noinst_PROGRAMS += \
   suspend_resume_epoll
@@ -87,8 +82,7 @@ endif
 if HAVE_POSIX_THREADS
 if ENABLE_UPGRADE
 noinst_PROGRAMS += \
- upgrade_example \
- websocket_threaded_example
+ upgrade_example
 endif
 endif
 
@@ -125,14 +119,6 @@ upgrade_example_LDADD = \
   $(top_builddir)/src/microhttpd/libmicrohttpd.la \
   $(PTHREAD_LIBS)
 
-websocket_threaded_example_SOURCES = \
- websocket_threaded_example.c
-websocket_threaded_example_CFLAGS = \
-  $(PTHREAD_CFLAGS) $(AM_CFLAGS)
-websocket_threaded_example_LDADD = \
-  $(top_builddir)/src/microhttpd/libmicrohttpd.la \
-  $(PTHREAD_LIBS)
-
 timeout_SOURCES = \
  timeout.c
 timeout_LDADD = \
@@ -148,12 +134,6 @@ json_echo_SOURCES = \
 json_echo_LDADD = \
  $(top_builddir)/src/microhttpd/libmicrohttpd.la \
  -ljansson
-
-websocket_chatserver_example_SOURCES = \
- websocket_chatserver_example.c
-websocket_chatserver_example_LDADD = \
- $(top_builddir)/src/microhttpd_ws/libmicrohttpd_ws.la \
- $(top_builddir)/src/microhttpd/libmicrohttpd.la
 
 demo_SOURCES = \
  demo.c
