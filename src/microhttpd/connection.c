@@ -358,6 +358,21 @@
 #define ERR_RSP_WSP_IN_FOOTER_NAME ""
 #endif
 
+
+/**
+ * Response text used when the whitespace found before colon (inside header
+ * name or between header name and colon).
+ */
+#ifdef HAVE_MESSAGES
+#define ERR_RSP_INVALID_CHAR_IN_FIELD_NAME \
+  "<html>" \
+  "<head><title>Request broken</title></head>" \
+  "<body>HTTP request has invalid character in field name.</body>" \
+  "</html>"
+#else
+#define ERR_RSP_INVALID_CHAR_IN_FIELD_NAME ""
+#endif
+
 /**
  * Response text used when request header has invalid character.
  */
@@ -5703,6 +5718,102 @@ enum MHD_HdrLineReadRes_
 
 
 /**
+ * Check if a character is legal inside of a field
+ * name according to RFC 9110.
+ *
+ * @param chr character to test
+ * @return true if character is allowed
+ */
+static bool
+char_legal_in_field_name (char chr)
+{
+  switch (chr)
+  {
+  case '!':
+  case '#':
+  case '$':
+  case '%':
+  case '&':
+  case '\'':
+  case '*':
+  case '+':
+  case '-':
+  case '.':
+  case '^':
+  case '_':
+  case '`':
+  case '|':
+  case '~':
+  case 'a':
+  case 'b':
+  case 'c':
+  case 'd':
+  case 'e':
+  case 'f':
+  case 'g':
+  case 'h':
+  case 'i':
+  case 'j':
+  case 'k':
+  case 'l':
+  case 'm':
+  case 'n':
+  case 'o':
+  case 'p':
+  case 'q':
+  case 'r':
+  case 's':
+  case 't':
+  case 'u':
+  case 'v':
+  case 'w':
+  case 'x':
+  case 'y':
+  case 'z':
+  case 'A':
+  case 'B':
+  case 'C':
+  case 'D':
+  case 'E':
+  case 'F':
+  case 'G':
+  case 'H':
+  case 'I':
+  case 'J':
+  case 'K':
+  case 'L':
+  case 'M':
+  case 'N':
+  case 'O':
+  case 'P':
+  case 'Q':
+  case 'R':
+  case 'S':
+  case 'T':
+  case 'U':
+  case 'V':
+  case 'W':
+  case 'X':
+  case 'Y':
+  case 'Z':
+  case '0':
+  case '1':
+  case '2':
+  case '3':
+  case '4':
+  case '5':
+  case '6':
+  case '7':
+  case '8':
+  case '9':
+    return true;
+  default:
+    return false;
+  }
+}
+
+
+/**
  * Find the end of the request header line and make basic header parsing.
  * Handle errors and header folding.
  * @param c the connection to process
@@ -5749,6 +5860,9 @@ get_req_header (struct MHD_Connection *c,
   /* Allow zero-length header (field) name.
      Violates RFC 9110, section 5.1-2 */
   const bool allow_empty_name = (-2 >= discp_lvl);
+  /* Allow non-tchar characters in header (field) name.
+     Violates RFC 9110, section 5.1 */
+  const bool allow_extended_charset = (-2 >= discp_lvl);
   /* Allow whitespace before colon.
      Violates RFC 9112, section 5.1-2 */
   const bool allow_wsp_before_colon = (-3 >= discp_lvl);
@@ -6080,10 +6194,20 @@ get_req_header (struct MHD_Connection *c,
       mhd_assert ('\r' != chr);
       mhd_assert ('\n' != chr);
       mhd_assert ('\0' != chr);
-      if ((! c->rq.hdrs.hdr.name_end_found) &&
-          (! c->rq.hdrs.hdr.starts_with_ws))
+      if ( (! c->rq.hdrs.hdr.name_end_found) &&
+           (! c->rq.hdrs.hdr.starts_with_ws) )
       {
         /* Processing the header (field) name */
+        if ( (! allow_extended_charset) &&
+             (':' != chr) &&
+             (! char_legal_in_field_name (chr)) )
+        {
+          transmit_error_response_static (c,
+                                          MHD_HTTP_BAD_REQUEST,
+                                          ERR_RSP_INVALID_CHAR_IN_FIELD_NAME);
+          return MHD_HDR_LINE_READING_DATA_ERROR;
+        }
+
         if (':' == chr)
         {
           if (0 == c->rq.hdrs.hdr.ws_start)
