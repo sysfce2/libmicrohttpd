@@ -5929,7 +5929,6 @@ m4/Makefile
 src/Makefile
 src/include/Makefile
 src/microhttpd/Makefile
-src/microhttpd_ws/Makefile
 src/examples/Makefile
 src/tools/Makefile
 src/testcurl/Makefile
