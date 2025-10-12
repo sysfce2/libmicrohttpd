@@ -393,9 +393,12 @@ struct curlQueryParams
 
 
 static CURL *
-curlEasyInitForTest (const char *queryPath, uint16_t port, struct CBC *pcbc,
+curlEasyInitForTest (const char *queryPath,
+                     uint16_t port,
+                     struct CBC *pcbc,
                      struct headers_check_result *hdr_chk_result,
-                     int add_hdr_close, int add_hdr_k_alive)
+                     int add_hdr_close,
+                     int add_hdr_k_alive)
 {
   CURL *c;
 
@@ -440,9 +443,13 @@ curlEasyInitForTest (const char *queryPath, uint16_t port, struct CBC *pcbc,
   }
   else if (add_hdr_close)
   {
-    if (CURLE_OK != curl_easy_setopt (c, CURLOPT_HTTPHEADER, curl_close_hdr))
+    if (CURLE_OK !=
+        curl_easy_setopt (c,
+                          CURLOPT_HTTPHEADER,
+                          curl_close_hdr))
     {
-      fprintf (stderr, "Set libcurl HTTP header failed.\n");
+      fprintf (stderr,
+               "Set libcurl HTTP header failed.\n");
       externalErrorExit ();
     }
   }
@@ -668,7 +675,9 @@ doCurlQueryInThread (struct MHD_Daemon *d,
   hdr_res.found_conn_close = 0;
   hdr_res.found_conn_keep_alive = 0;
 
-  c = curlEasyInitForTest (p->queryPath, p->queryPort, &cbc, &hdr_res,
+  c = curlEasyInitForTest (p->queryPath,
+                           p->queryPort,
+                           &cbc, &hdr_res,
                            add_hdr_close, add_hdr_k_alive);
 
   if (! use_external_poll)
@@ -694,10 +703,12 @@ doCurlQueryInThread (struct MHD_Daemon *d,
   {
     if (cbc.pos != strlen (EXPECTED_URI_BASE_PATH))
     {
-      fprintf (stderr, "curl reports wrong size of MHD reply body data.\n");
+      fprintf (stderr,
+               "curl reports wrong size of MHD reply body data.\n");
       p->queryError = 1;
     }
-    else if (0 != strncmp (EXPECTED_URI_BASE_PATH, cbc.buf,
+    else if (0 != strncmp (EXPECTED_URI_BASE_PATH,
+                           cbc.buf,
                            strlen (EXPECTED_URI_BASE_PATH)))
     {
       fprintf (stderr, "curl reports wrong MHD reply body data.\n");
@@ -710,17 +721,23 @@ doCurlQueryInThread (struct MHD_Daemon *d,
   if (! hdr_res.found_http11 && ! hdr_res.found_http10)
   {
     if (! params_printed)
-      params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-    fprintf (stderr, "No know HTTP versions were found in the "
-             "reply header. Line: %d\n", __LINE__);
+      params_printed = print_test_params (add_hdr_close,
+                                          add_hdr_k_alive);
+    fprintf (stderr,
+             "No know HTTP versions were found in the "
+             "reply header. Line: %d\n",
+             __LINE__);
     exit (24);
   }
   else if (hdr_res.found_http11 && hdr_res.found_http10)
   {
     if (! params_printed)
-      params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-    fprintf (stderr, "Both HTTP/1.1 and HTTP/1.0 were found in the "
-             "reply header. Line: %d\n", __LINE__);
+      params_printed = print_test_params (add_hdr_close,
+                                          add_hdr_k_alive);
+    fprintf (stderr,
+             "Both HTTP/1.1 and HTTP/1.0 were found in the "
+             "reply header. Line: %d\n",
+             __LINE__);
     exit (24);
   }
 
@@ -729,16 +746,21 @@ doCurlQueryInThread (struct MHD_Daemon *d,
     if (! hdr_res.found_conn_close)
     {
       if (! params_printed)
-        params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-      fprintf (stderr, "\"Connection: close\" was not found in"
+        params_printed = print_test_params (add_hdr_close,
+                                            add_hdr_k_alive);
+      fprintf (stderr,
+               "\"Connection: close\" was not found in"
                " MHD reply headers.\n");
       p->queryError |= 2;
+      exit (42);
     }
     if (hdr_res.found_conn_keep_alive)
     {
       if (! params_printed)
-        params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-      fprintf (stderr, "\"Connection: keep-alive\" was found in"
+        params_printed = print_test_params (add_hdr_close,
+                                            add_hdr_k_alive);
+      fprintf (stderr,
+               "\"Connection: keep-alive\" was found in"
                " MHD reply headers.\n");
       p->queryError |= 2;
     }
@@ -748,8 +770,10 @@ doCurlQueryInThread (struct MHD_Daemon *d,
       if (0 != getMhdActiveConnections (d))
       {
         if (! params_printed)
-          params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-        fprintf (stderr, "MHD still has active connection "
+          params_printed = print_test_params (add_hdr_close,
+                                              add_hdr_k_alive);
+        fprintf (stderr,
+                 "MHD still has active connection "
                  "after response has been sent.\n");
         p->queryError |= 2;
       }
@@ -762,8 +786,10 @@ doCurlQueryInThread (struct MHD_Daemon *d,
       if (! hdr_res.found_conn_keep_alive)
       {
         if (! params_printed)
-          params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-        fprintf (stderr, "\"Connection: keep-alive\" was not found in"
+          params_printed = print_test_params (add_hdr_close,
+                                              add_hdr_k_alive);
+        fprintf (stderr,
+                 "\"Connection: keep-alive\" was not found in"
                  " MHD reply headers.\n");
         p->queryError |= 2;
       }
@@ -773,8 +799,10 @@ doCurlQueryInThread (struct MHD_Daemon *d,
       if (hdr_res.found_conn_keep_alive)
       {
         if (! params_printed)
-          params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-        fprintf (stderr, "\"Connection: keep-alive\" was found in"
+          params_printed = print_test_params (add_hdr_close,
+                                              add_hdr_k_alive);
+        fprintf (stderr,
+                 "\"Connection: keep-alive\" was found in"
                  " MHD reply headers.\n");
         p->queryError |= 2;
       }
@@ -782,8 +810,10 @@ doCurlQueryInThread (struct MHD_Daemon *d,
     if (hdr_res.found_conn_close)
     {
       if (! params_printed)
-        params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-      fprintf (stderr, "\"Connection: close\" was found in"
+        params_printed = print_test_params (add_hdr_close,
+                                            add_hdr_k_alive);
+      fprintf (stderr,
+               "\"Connection: close\" was found in"
                " MHD reply headers.\n");
       p->queryError |= 2;
     }
@@ -794,17 +824,22 @@ doCurlQueryInThread (struct MHD_Daemon *d,
       if (0 == num_conn)
       {
         if (! params_printed)
-          params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-        fprintf (stderr, "MHD has no active connection "
+          params_printed = print_test_params (add_hdr_close,
+                                              add_hdr_k_alive);
+        fprintf (stderr,
+                 "MHD has no active connection "
                  "after response has been sent.\n");
         p->queryError |= 2;
       }
       else if (1 != num_conn)
       {
         if (! params_printed)
-          params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-        fprintf (stderr, "MHD has wrong number of active connection (%u) "
-                 "after response has been sent. Line: %d\n", num_conn,
+          params_printed = print_test_params (add_hdr_close,
+                                              add_hdr_k_alive);
+        fprintf (stderr,
+                 "MHD has wrong number of active connection (%u) "
+                 "after response has been sent. Line: %d\n",
+                 num_conn,
                  __LINE__);
         exit (23);
       }
@@ -817,26 +852,33 @@ doCurlQueryInThread (struct MHD_Daemon *d,
     /* libcurl closes connection socket with curl_multi_remove_handle () /
        curl_multi_cleanup() */
     curl_socket_t curl_sckt;
-    if (CURLE_OK !=  curl_easy_getinfo (c, CURLINFO_ACTIVESOCKET, &curl_sckt))
+
+    if (CURLE_OK !=
+        curl_easy_getinfo (c,
+                           CURLINFO_ACTIVESOCKET,
+                           &curl_sckt))
     {
       fprintf (stderr,
                "Failed to get libcurl active socket.\n");
       libcurlErrorExit ();
     }
-
     if (conn_close && (CURL_SOCKET_BAD != curl_sckt))
     {
       if (! params_printed)
-        params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-      fprintf (stderr, "libcurl still has active connection "
+        params_printed = print_test_params (add_hdr_close,
+                                            add_hdr_k_alive);
+      fprintf (stderr,
+               "libcurl still has active connection "
                "after performing the test query.\n");
       p->queryError |= 2;
     }
     else if (! conn_close && (CURL_SOCKET_BAD == curl_sckt))
     {
       if (! params_printed)
-        params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-      fprintf (stderr, "libcurl has no active connection "
+        params_printed = print_test_params (add_hdr_close,
+                                            add_hdr_k_alive);
+      fprintf (stderr,
+               "libcurl has no active connection "
                "after performing the test query.\n");
       p->queryError |= 2;
     }
@@ -844,23 +886,29 @@ doCurlQueryInThread (struct MHD_Daemon *d,
 #endif
 
   if (! mhd_set_10_server)
-  { /* Response must be HTTP/1.1 */
+  {
+    /* Response must be HTTP/1.1 */
     if (hdr_res.found_http10)
     {
       if (! params_printed)
-        params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-      fprintf (stderr, "Reply has HTTP/1.0 version, while it "
+        params_printed = print_test_params (add_hdr_close,
+                                            add_hdr_k_alive);
+      fprintf (stderr,
+               "Reply has HTTP/1.0 version, while it "
                "must be HTTP/1.1.\n");
       p->queryError |= 4;
     }
   }
   else
-  { /* Response must be HTTP/1.0 */
+  {
+    /* Response must be HTTP/1.0 */
     if (hdr_res.found_http11)
     {
       if (! params_printed)
-        params_printed = print_test_params (add_hdr_close, add_hdr_k_alive);
-      fprintf (stderr, "Reply has HTTP/1.1 version, while it "
+        params_printed = print_test_params (add_hdr_close,
+                                            add_hdr_k_alive);
+      fprintf (stderr,
+               "Reply has HTTP/1.1 version, while it "
                "must be HTTP/1.0.\n");
       p->queryError |= 4;
     }
@@ -1110,7 +1158,10 @@ main (int argc, char *const *argv)
   global_port = 0;
   test_result = testExternalGet ();
   if (test_result)
+  {
     fprintf (stderr, "FAILED: testExternalGet () - %u.\n", test_result);
+    return test_result;
+  }
   else if (verbose)
     printf ("PASSED: testExternalGet ().\n");
   errorCount += test_result;
