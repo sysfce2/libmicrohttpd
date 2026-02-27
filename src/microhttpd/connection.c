@@ -4427,7 +4427,7 @@ process_request_body (struct MHD_Connection *connection)
   const bool bare_lf_as_crlf = MHD_ALLOW_BARE_LF_AS_CRLF_ (discp_lvl);
   /* Allow "Bad WhiteSpace" in chunk extension.
      RFC 9112, Section 7.1.1, Paragraph 2 */
-  const bool allow_bws = (2 < discp_lvl);
+  const bool allow_bws = (2 > discp_lvl);
 
   mhd_assert (NULL == connection->rp.response);
 
