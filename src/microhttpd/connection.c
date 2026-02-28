@@ -4564,10 +4564,11 @@ process_request_body (struct MHD_Connection *connection)
         broken = (0 == num_dig);
         if (broken)
         {
+          uint64_t dummy;
           /* Check whether result is invalid due to uint64_t overflow */
-          overflow = ((('0' <= buffer_head[0]) && ('9' >= buffer_head[0])) ||
-                      (('A' <= buffer_head[0]) && ('F' >= buffer_head[0])) ||
-                      (('a' <= buffer_head[0]) && ('f' >= buffer_head[0])));
+          overflow = (0 != MHD_strx_to_uint64_n_ (buffer_head,
+                                                  1,
+                                                  &dummy));
         }
         else
         {
