@@ -1,3 +1,7 @@
+Sat Feb 28 23:38:39 CET 2026
+    Added MHD_OPTION_ALLOW_BIN_ZERO_IN_URI_PATH daemon option.
+    Added new function MHD_get_connection_URI_path_n().  -EG
+
 Mon Jul 14 05:03:07 PM CEST 2025
     Fix double-close bugs on bind() errors reported by MC on the list.
     Removed MHD2 draft code, now in libmicrohttpd2.git.

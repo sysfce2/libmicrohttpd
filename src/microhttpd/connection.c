@@ -513,6 +513,13 @@
 #endif
 
 /**
+ * Response text used when the request target path has %00 sequence.
+ */
+#define REQUEST_HAS_NUL_CHAR_IN_PATH \
+  "<html><head><title>Bad Request Path</title></head>" \
+  "<body>The request path contains invalid characters.</body></html>"
+
+/**
  * Response text used when the request HTTP chunked encoding is
  * malformed.
  */
@@ -789,6 +796,32 @@ recv_param_adapter (struct MHD_Connection *connection,
       ~((enum MHD_EpollState) MHD_EPOLL_STATE_READ_READY);
 #endif /* EPOLL_SUPPORT */
   return ret;
+}
+
+
+_MHD_EXTERN enum MHD_Result
+MHD_get_connection_URI_path_n (struct MHD_Connection *connection,
+                               const char **uri,
+                               size_t *uri_size)
+{
+  if (NULL != uri)
+    *uri = NULL;
+  if (NULL != uri_size)
+    *uri_size = 0u;
+
+  if (connection->state < MHD_CONNECTION_REQ_LINE_RECEIVED)
+    return MHD_NO;
+  if (connection->state >= MHD_CONNECTION_START_REPLY)
+    return MHD_NO;
+  if (NULL == connection->rq.url)
+    return MHD_NO;
+
+  if (NULL != uri)
+    *uri = connection->rq.url;
+  if (NULL != uri_size)
+    *uri_size = connection->rq.url_len;
+
+  return MHD_YES;
 }
 
 
@@ -2917,6 +2950,7 @@ transmit_error_response_len (struct MHD_Connection *connection,
     connection->rq.method = NULL;
     connection->rq.url = NULL;
     connection->rq.url_len = 0;
+    connection->rq.url_for_callback = NULL;
     connection->rq.headers_received = NULL;
     connection->rq.headers_received_tail = NULL;
     connection->write_buffer = NULL;
@@ -4402,7 +4436,7 @@ call_connection_handler (struct MHD_Connection *connection)
   if (MHD_NO ==
       daemon->default_handler (daemon->default_handler_cls,
                                connection,
-                               connection->rq.url,
+                               connection->rq.url_for_callback,
                                connection->rq.method,
                                connection->rq.version,
                                NULL,
@@ -4435,11 +4469,9 @@ process_request_body (struct MHD_Connection *connection)
   bool instant_retry;
   char *buffer_head;
   const int discp_lvl = daemon->client_discipline;
-  /* Treat bare LF as the end of the line.
-     RFC 9112, section 2.2-3
-     Note: MHD never replaces bare LF with space (RFC 9110, section 5.5-5).
-     Bare LF is processed as end of the line or rejected as broken request. */
-  const bool bare_lf_as_crlf = MHD_ALLOW_BARE_LF_AS_CRLF_ (discp_lvl);
+  /* RFC does not allow LF as the line termination in chunk headers.
+     See RFC 9112, section 7.1 and section 2.2-3 */
+  const bool bare_lf_as_crlf = (-2 > discp_lvl);
   /* Allow "Bad WhiteSpace" in chunk extension.
      RFC 9112, Section 7.1.1, Paragraph 2 */
   const bool allow_bws = (2 > discp_lvl);
@@ -4462,6 +4494,7 @@ process_request_body (struct MHD_Connection *connection)
             connection->rq.current_chunk_size) &&
            (0 != connection->rq.current_chunk_size) )
       {
+        /* Skip CRLF chunk termination */
         size_t i;
         mhd_assert (0 != available);
         /* skip new line at the *end* of a chunk */
@@ -4491,12 +4524,10 @@ process_request_body (struct MHD_Connection *connection)
       }
       if (0 != connection->rq.current_chunk_size)
       {
+        /* Process chunk "content" */
         uint64_t cur_chunk_left;
         mhd_assert (connection->rq.current_chunk_offset < \
                     connection->rq.current_chunk_size);
-        /* we are in the middle of a chunk, give
-           as much as possible to the client (without
-           crossing chunk boundaries) */
         cur_chunk_left
           = connection->rq.current_chunk_size
             - connection->rq.current_chunk_offset;
@@ -4532,10 +4563,12 @@ process_request_body (struct MHD_Connection *connection)
 
         broken = (0 == num_dig);
         if (broken)
+        {
           /* Check whether result is invalid due to uint64_t overflow */
           overflow = ((('0' <= buffer_head[0]) && ('9' >= buffer_head[0])) ||
                       (('A' <= buffer_head[0]) && ('F' >= buffer_head[0])) ||
                       (('a' <= buffer_head[0]) && ('f' >= buffer_head[0])));
+        }
         else
         {
           /**
@@ -4646,7 +4679,7 @@ process_request_body (struct MHD_Connection *connection)
     if (MHD_NO ==
         daemon->default_handler (daemon->default_handler_cls,
                                  connection,
-                                 connection->rq.url,
+                                 connection->rq.url_for_callback,
                                  connection->rq.method,
                                  connection->rq.version,
                                  buffer_head,
@@ -5589,6 +5622,7 @@ process_request_target (struct MHD_Connection *c)
   mhd_assert (MHD_CONNECTION_REQ_LINE_RECEIVING == c->state);
   mhd_assert (NULL == c->rq.url);
   mhd_assert (0 == c->rq.url_len);
+  mhd_assert (NULL == c->rq.url_for_callback);
   mhd_assert (NULL != c->rq.hdrs.rq_line.rq_tgt);
   mhd_assert ((NULL == c->rq.hdrs.rq_line.rq_tgt_qmark) || \
               (c->rq.hdrs.rq_line.rq_tgt <= c->rq.hdrs.rq_line.rq_tgt_qmark));
@@ -5630,6 +5664,7 @@ process_request_target (struct MHD_Connection *c)
     params_len = 0;
 #endif /* _DEBUG */
 
+  mhd_assert (NULL == c->rq.url_for_callback);
   mhd_assert (strlen (c->rq.hdrs.rq_line.rq_tgt) == \
               c->rq.req_target_len - params_len);
 
@@ -5639,6 +5674,18 @@ process_request_target (struct MHD_Connection *c)
                                   c,
                                   c->rq.hdrs.rq_line.rq_tgt);
   c->rq.url = c->rq.hdrs.rq_line.rq_tgt;
+
+  if (2 == c->daemon->allow_bzero_in_url)
+    c->rq.url_for_callback = c->rq.url;
+  else if (strlen (c->rq.url) == c->rq.url_len)
+    c->rq.url_for_callback = c->rq.url;
+  else if (0 == c->daemon->allow_bzero_in_url)
+  {
+    transmit_error_response_static (c,
+                                    MHD_HTTP_BAD_REQUEST,
+                                    REQUEST_HAS_NUL_CHAR_IN_PATH);
+    return false;
+  }
 
   return true;
 }
@@ -5684,6 +5731,7 @@ get_request_line (struct MHD_Connection *c)
   mhd_assert (MHD_CONNECTION_REQ_LINE_RECEIVING == c->state);
   mhd_assert (NULL == c->rq.url);
   mhd_assert (0 == c->rq.url_len);
+  mhd_assert (NULL == c->rq.url_for_callback);
   mhd_assert (NULL != c->rq.hdrs.rq_line.rq_tgt);
   if (0 != c->rq.hdrs.rq_line.num_ws_in_uri)
   {
