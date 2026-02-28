@@ -4583,7 +4583,7 @@ process_request_body (struct MHD_Connection *connection)
               (allow_bws &&
                ((' ' == buffer_head[num_dig]) ||
                 ('\t' == buffer_head[num_dig]))))
-          { /* Chunk extension */
+          { /* Chunk extension or "bad whitespace" after chunk length */
             size_t i;
 
             /* Skip bad whitespaces (if any) */
@@ -4596,20 +4596,32 @@ process_request_body (struct MHD_Connection *connection)
               break; /* need more data */
             if (';' == buffer_head[i])
             {
+              /* Chunk extension */
               for (++i; i < available; ++i)
               {
-                if ('\n' == buffer_head[i])
+                if (('\r' == buffer_head[i]) ||
+                    ('\n' == buffer_head[i]))
                   break;
               }
               if (i == available)
                 break; /* need more data */
               mhd_assert (i > num_dig);
               mhd_assert (1 <= i);
-              /* Found LF position */
-              if (bare_lf_as_crlf)
-                chunk_size_line_len = i; /* Don't care about CR before LF */
-              else if ('\r' == buffer_head[i - 1])
-                chunk_size_line_len = i;
+              if ('\r' == buffer_head[i])
+              {
+                if (i + 1 == available)
+                  break; /* need more data */
+                if ('\n' == buffer_head[i + 1])
+                  chunk_size_line_len = i; /* Valid chunk header */
+              }
+              else
+              {
+                mhd_assert ('\n' == buffer_head[i]);
+                if (bare_lf_as_crlf)
+                  chunk_size_line_len = i; /* Valid chunk header */
+              }
+              /* The chunk header is broken
+                 if chunk_size_line_len is zero here. */
             }
             else
             { /* No ';' after "bad whitespace" */
@@ -4619,6 +4631,7 @@ process_request_body (struct MHD_Connection *connection)
           }
           else
           {
+            /* No chunk extension */
             mhd_assert (available >= num_dig);
             if ((2 <= (available - num_dig)) &&
                 ('\r' == buffer_head[num_dig]) &&
