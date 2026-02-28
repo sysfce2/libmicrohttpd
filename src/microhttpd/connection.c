@@ -2946,19 +2946,34 @@ transmit_error_response_len (struct MHD_Connection *connection,
 /**
  * Transmit static string as error response
  */
-#define transmit_error_response_static(c, code, msg) \
+#ifdef HAVE_MESSAGES
+#  define transmit_error_response_static(c, code, msg) \
   transmit_error_response_len (c, code, \
                                msg, MHD_STATICSTR_LEN_ (msg), \
                                NULL, 0, NULL, 0)
+#else  /* ! HAVE_MESSAGES */
+#  define transmit_error_response_static(c, code, msg) \
+  transmit_error_response_len (c, code, \
+                               "", 0, \
+                               NULL, 0, NULL, 0)
+#endif /* ! HAVE_MESSAGES */
 
 /**
  * Transmit static string as error response and add specified header
  */
-#define transmit_error_response_header(c, code, m, hd_n, hd_n_l, hd_v, hd_v_l) \
+#ifdef HAVE_MESSAGES
+#  define transmit_error_response_header(c, code, m, hd_n, hd_n_l, hd_v, hd_v_l) \
   transmit_error_response_len (c, code, \
                                m, MHD_STATICSTR_LEN_ (m), \
                                hd_n, hd_n_l, \
                                hd_v, hd_v_l)
+#else  /* ! HAVE_MESSAGES */
+#  define transmit_error_response_header(c, code, m, hd_n, hd_n_l, hd_v, hd_v_l) \
+  transmit_error_response_len (c, code, \
+                               "", 0, \
+                               hd_n, hd_n_l, \
+                               hd_v, hd_v_l)
+#endif /* ! HAVE_MESSAGES */
 
 
 /**
