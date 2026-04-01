@@ -1,5 +1,5 @@
 # This file is part of libmicrohttpd.
-# (C) 2006-2021 Christian Grothoff (and other contributing authors)
+# (C) 2006-2026 Christian Grothoff (and other contributing authors)
 # (C) 2014-2024 Evgeny Grin (Karlson2k)
 #
 # libmicrohttpd is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #
 AC_PREREQ([2.64])
 LT_PREREQ([2.4.0])
-AC_INIT([GNU libmicrohttpd],[1.0.2],[libmicrohttpd@gnu.org])
+AC_INIT([GNU libmicrohttpd],[1.0.3],[libmicrohttpd@gnu.org])
 AC_CONFIG_AUX_DIR([build-aux])
 MHD_AUX_DIR='build-aux' # Must be set to the same value as in the previous line
 AC_CONFIG_HEADERS([MHD_config.h])
@@ -31,7 +31,7 @@ AC_CONFIG_MACRO_DIR([m4])
 m4_pattern_forbid([^_?MHD_[A-Z_]+_CC_])dnl
 
 LIB_VERSION_CURRENT=74
-LIB_VERSION_REVISION=2
+LIB_VERSION_REVISION=3
 LIB_VERSION_AGE=62
 AC_SUBST([LIB_VERSION_CURRENT])
 AC_SUBST([LIB_VERSION_REVISION])

@@ -1,3 +1,9 @@
+Thu Apr  2 12:13:57 AM CEST 2026
+    Fixed bug in connection list traversal logic that could
+    cause ready connections to be skipped (possibly indefinitely)
+    if another connection was being suspended.
+    Releasing GNU libmicrohttpd 1.0.3. -CG
+
 Sat Feb 28 23:38:39 CET 2026
     Added MHD_OPTION_ALLOW_BIN_ZERO_IN_URI_PATH daemon option.
     Added new function MHD_get_connection_URI_path_n().  -EG

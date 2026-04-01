@@ -1,3 +1,13 @@
+Thu Apr  2 12:16:28 AM CEST 2026
+Released GNU libmicrohttpd 1.0.3.
+
+    This is a bugfix release.
+    It primarily fixes a list traversal issue that could
+    cause connection handling issues when other connections
+    were suspended.
+
+    -- Christian Grothoff
+
 Mon Jul 14 2025 05:03:07 PM CEST
 Released GNU libmicrohttpd 1.0.2.
 
