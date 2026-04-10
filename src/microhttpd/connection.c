@@ -4912,7 +4912,7 @@ parse_connection_headers (struct MHD_Connection *connection)
         size_t num_digits;
 
         if (found &&
-            (1 <= connection->daemon->client_discipline))
+            (0 <= connection->daemon->client_discipline))
         {
           /* more than one header, bad */
           transmit_error_response_static (connection,
