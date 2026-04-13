@@ -1,3 +1,11 @@
+Mon Apr 13 11:42:06 AM CEST 2026
+Released GNU libmicrohttpd 1.0.4.
+
+    This is a bugfix release.
+    It fixes a minor HTTP request smuggling issue (CWE-444).
+
+    -- Christian Grothoff
+
 Thu Apr  2 12:16:28 AM CEST 2026
 Released GNU libmicrohttpd 1.0.3.
 

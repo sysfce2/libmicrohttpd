@@ -1,3 +1,10 @@
+Mon Apr 13 11:39:04 AM CEST 2026
+    Fixed bug where additional "Content-Length" headers were
+    ignored instead of rejecting the request, fixing a 
+    (minor) header smuggling vulnerability discovered 
+    by SySS GmbH.
+    Releasing GNU libmicrohttpd 1.0.4. -CG
+
 Thu Apr  2 12:13:57 AM CEST 2026
     Fixed bug in connection list traversal logic that could
     cause ready connections to be skipped (possibly indefinitely)
