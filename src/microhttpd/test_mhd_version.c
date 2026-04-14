@@ -66,6 +66,7 @@ test_macro1_vs_macro2_str (void)
   printf ("Checking PACKAGE_VERSION macro vs VERSION macro.\n");
   if (0 != strcmp (str_macro_pkg_ver, str_macro_ver))
   {
+    fflush (stdout);
     fprintf (stderr, "'%s' vs '%s' - FAILED.\n",
              str_macro_pkg_ver, str_macro_ver);
     return 1;
@@ -84,13 +85,17 @@ test_macro2_vs_func_str (void)
   printf ("Checking VERSION macro vs MHD_get_version() function.\n");
   if (NULL == str_func)
   {
+    fflush (stdout);
     fprintf (stderr, "MHD_get_version() returned NULL.\n");
+    fflush (stderr);
     return 1;
   }
   if (0 != strcmp (str_macro_ver, str_func))
   {
+    fflush (stdout);
     fprintf (stderr, "'%s' vs '%s' - FAILED.\n",
              str_macro_ver, str_func);
+    fflush (stderr);
     return 1;
   }
   printf ("'%s' vs '%s' - success.\n",
@@ -121,22 +126,26 @@ test_func_str_vs_macro_bin (void)
 #endif /* ! HAVE_SNPRINTF */
   if ((9 < res) || (0 >= res))
   {
+    fflush (stdout);
     fprintf (stderr, "snprintf() error.\n");
+    fflush (stderr);
     exit (99);
   }
 
   if (0 != strcmp (str_func, bin_print))
   {
+    fflush (stdout);
     fprintf (stderr, "'%s' vs '0x%08" PRIX32 "' ('%s') - FAILED.\n",
              str_func,
              bin_macro,
              bin_print);
+    fflush (stderr);
     return 1;
   }
-  fprintf (stderr, "'%s' vs '0x%08" PRIX32 "' ('%s') - success.\n",
-           str_func,
-           bin_macro,
-           bin_print);
+  printf ("'%s' vs '0x%08" PRIX32 "' ('%s') - success.\n",
+          str_func,
+          bin_macro,
+          bin_print);
   return 0;
 }
 
@@ -150,8 +159,10 @@ test_macro_vs_func_bin (void)
   printf ("Checking MHD_VERSION macro vs MHD_get_version_bin() function.\n");
   if (bin_macro != bin_func)
   {
+    fflush (stdout);
     fprintf (stderr, "'0x%08" PRIX32 "' vs '0x%08" PRIX32 "' - FAILED.\n",
              bin_macro, bin_func);
+    fflush (stderr);
     return 1;
   }
   printf ("'0x%08" PRIX32 "' vs '0x%08" PRIX32 "' - success.\n",
@@ -172,37 +183,45 @@ test_func_bin_format (void)
   if ((0xA <= (test_byte & 0xF))
       || (0xA <= (test_byte >> 4)))
   {
+    fflush (stdout);
     fprintf (stderr,
              "Invalid value in the first (most significant) byte: %02X\n",
              test_byte);
+    fflush (stderr);
     ret = 1;
   }
   test_byte = (unsigned int) ((bin_func >> 16) & 0xFF);
   if ((0xA <= (test_byte & 0xF))
       || (0xA <= (test_byte >> 4)))
   {
+    fflush (stdout);
     fprintf (stderr,
              "Invalid value in the second byte: %02X\n",
              test_byte);
+    fflush (stderr);
     ret = 1;
   }
   test_byte = (unsigned int) ((bin_func >> 8) & 0xFF);
   if ((0xA <= (test_byte & 0xF))
       || (0xA <= (test_byte >> 4)))
   {
+    fflush (stdout);
     fprintf (stderr,
              "Invalid value in the third byte: %02X\n",
              test_byte);
+    fflush (stderr);
     ret = 1;
   }
   if (0 != ret)
   {
+    fflush (stdout);
     fprintf (stderr,
              "The value (0x%08" PRIX32 ") returned by MHD_get_version_bin() "
              "function is invalid as it cannot be used as packed BCD form "
              "(its hexadecimal representation has at least one digit in "
              "A-F range).\n",
              bin_func);
+    fflush (stderr);
     return 1;
   }
   printf ("'0x%08" PRIX32 "' - success.\n", bin_func);
@@ -222,7 +241,9 @@ main (void)
 
   if (0 != res)
   {
+    fflush (stdout);
     fprintf (stderr, "Test failed. Number of errors: %d\n", res);
+    fflush (stderr);
     return 1;
   }
   printf ("Test succeed.\n");
