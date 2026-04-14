@@ -1,7 +1,7 @@
 /*
      This file is part of libmicrohttpd
      Copyright (C) 2007-2020 Daniel Pittman and Christian Grothoff
-     Copyright (C) 2015-2024 Evgeny Grin (Karlson2k)
+     Copyright (C) 2015-2026 Evgeny Grin (Karlson2k)
 
      This library is free software; you can redistribute it and/or
      modify it under the terms of the GNU Lesser General Public
@@ -469,6 +469,14 @@
 #define REQUEST_LACKS_HOST ""
 #endif
 
+/**
+ * Response text used when the request has multiple "Host:" headers
+ */
+#define REQUEST_MULTIPLE_HOST_HDR \
+        "<html>" \
+        "<head><title>Multiple &quot;Host:&quot; headers</title></head>" \
+        "<body>Request contains several <b>&quot;Host:&quot;</b> headers." \
+        "</body></html>"
 
 /**
  * Response text used when the request (http header) has
@@ -512,6 +520,14 @@
 #else
 #define REQUEST_LENGTH_WITH_TR_ENCODING ""
 #endif
+
+/**
+ * Response text used when the HTTP/1.0 request has "Transfer-Encoding:" header
+ */
+#define REQUEST_HTTP1_0_TR_ENCODING \
+        "<html><head><title>Malformed request</title></head>" \
+        "<body><b>&quot;Transfer-Encoding:&quot;</b> must not be used " \
+        "with HTTP/1.0.</body></html>"
 
 /**
  * Response text used when the request (http header) is
@@ -968,11 +984,16 @@ MHD_set_connection_value_n_nocheck_ (struct MHD_Connection *connection,
   /* append 'pos' to the linked list of headers */
   if (NULL == connection->rq.headers_received_tail)
   {
+    mhd_assert (NULL == connection->rq.headers_received);
     connection->rq.headers_received = pos;
     connection->rq.headers_received_tail = pos;
   }
   else
   {
+    mhd_assert (NULL != connection->rq.headers_received);
+    mhd_assert (NULL == connection->rq.headers_received_tail->next);
+    mhd_assert (pos != connection->rq.headers_received_tail);
+    mhd_assert (pos != connection->rq.headers_received);
     connection->rq.headers_received_tail->next = pos;
     connection->rq.headers_received_tail = pos;
   }
@@ -4210,13 +4231,15 @@ parse_cookies_string (char *str,
  * Parse the cookie header (see RFC 6265).
  *
  * @param connection connection to parse header of
+ * @param hdr the value of the "Cookie:" header
+ * @param hdr_len the length of the @a hdr string
  * @return #MHD_PARSE_COOKIE_OK for success, error code otherwise
  */
 static enum _MHD_ParseCookie
-parse_cookie_header (struct MHD_Connection *connection)
+parse_cookie_header (struct MHD_Connection *connection,
+                     const char *hdr,
+                     size_t hdr_len)
 {
-  const char *hdr;
-  size_t hdr_len;
   char *cpy;
   size_t i;
   enum _MHD_ParseCookie parse_res;
@@ -4225,15 +4248,6 @@ parse_cookie_header (struct MHD_Connection *connection)
   const bool allow_partially_correct_cookie =
     (1 >= connection->daemon->client_discipline);
 
-  if (MHD_NO ==
-      MHD_lookup_connection_value_n (connection,
-                                     MHD_HEADER_KIND,
-                                     MHD_HTTP_HEADER_COOKIE,
-                                     MHD_STATICSTR_LEN_ (
-                                       MHD_HTTP_HEADER_COOKIE),
-                                     &hdr,
-                                     &hdr_len))
-    return MHD_PARSE_COOKIE_OK;
   if (0 == hdr_len)
     return MHD_PARSE_COOKIE_OK;
 
@@ -4804,161 +4818,227 @@ check_write_done (struct MHD_Connection *connection,
 /**
  * Parse the various headers; figure out the size
  * of the upload and make sure the headers follow
- * the protocol.  Advance to the appropriate state.
+ * the protocol.
  *
- * @param connection connection we're processing
+ * @param c the connection to process
  */
 static void
-parse_connection_headers (struct MHD_Connection *connection)
+parse_connection_headers (struct MHD_Connection *c)
 {
-  const char *enc;
+  struct MHD_HTTP_Req_Header *pos;
+  bool have_hdr_host;
+  bool have_cntn_len;
 
-#ifdef COOKIE_SUPPORT
-  if (MHD_PARSE_COOKIE_NO_MEMORY == parse_cookie_header (connection))
-  {
-    handle_req_cookie_no_space (connection);
-    return;
-  }
-#endif /* COOKIE_SUPPORT */
-  if ( (-3 < connection->daemon->client_discipline) &&
-       (MHD_IS_HTTP_VER_1_1_COMPAT (connection->rq.http_ver)) &&
-       (MHD_NO ==
-        MHD_lookup_connection_value_n (connection,
-                                       MHD_HEADER_KIND,
-                                       MHD_HTTP_HEADER_HOST,
-                                       MHD_STATICSTR_LEN_ (
-                                         MHD_HTTP_HEADER_HOST),
-                                       NULL,
-                                       NULL)) )
-  {
-#ifdef HAVE_MESSAGES
-    MHD_DLOG (connection->daemon,
-              _ ("Received HTTP/1.1 request without `Host' header.\n"));
-#endif
-    transmit_error_response_static (connection,
-                                    MHD_HTTP_BAD_REQUEST,
-                                    REQUEST_LACKS_HOST);
-    return;
-  }
+  have_hdr_host = false;
+  have_cntn_len = false;
 
   /* The presence of the request body is indicated by "Content-Length:" or
      "Transfer-Encoding:" request headers.
-     Unless one of these two headers is used, the request has no request body.
-     See RFC9112, Section 6, paragraph 4. */
-  connection->rq.remaining_upload_size = 0;
-  if (MHD_NO !=
-      MHD_lookup_connection_value_n (connection,
-                                     MHD_HEADER_KIND,
-                                     MHD_HTTP_HEADER_TRANSFER_ENCODING,
-                                     MHD_STATICSTR_LEN_ (
-                                       MHD_HTTP_HEADER_TRANSFER_ENCODING),
-                                     &enc,
-                                     NULL))
+     See RFC 9112 section 6.1, 6.2, 6.3; RFC 9110 Section 8.6. */
+
+  mhd_assert (0 == c->rq.remaining_upload_size);
+  mhd_assert (! c->rq.have_chunked_upload);
+
+  for (pos = c->rq.headers_received; NULL != pos; pos = pos->next)
   {
-    if (! MHD_str_equal_caseless_ (enc,
-                                   "chunked"))
+    if (MHD_HEADER_KIND != pos->kind)
+      continue;
+
+    if (MHD_str_equal_caseless_s_bin_n_ (MHD_HTTP_HEADER_HOST,
+                                         pos->header,
+                                         pos->header_size))
     {
-      transmit_error_response_static (connection,
-                                      MHD_HTTP_BAD_REQUEST,
-                                      REQUEST_UNSUPPORTED_TR_ENCODING);
-      return;
-    }
-    if (MHD_NO !=
-        MHD_lookup_connection_value_n (connection,
-                                       MHD_HEADER_KIND,
-                                       MHD_HTTP_HEADER_CONTENT_LENGTH,
-                                       MHD_STATICSTR_LEN_ (             \
-                                         MHD_HTTP_HEADER_CONTENT_LENGTH),
-                                       NULL,
-                                       NULL))
-    {
-      /* TODO: add individual settings */
-      if (1 <= connection->daemon->client_discipline)
+      if (have_hdr_host)
       {
-        transmit_error_response_static (connection,
-                                        MHD_HTTP_BAD_REQUEST,
-                                        REQUEST_LENGTH_WITH_TR_ENCODING);
+        if (-3 < c->daemon->client_discipline)
+        {
+          transmit_error_response_static (c,
+                                          MHD_HTTP_BAD_REQUEST,
+                                          REQUEST_MULTIPLE_HOST_HDR);
+          return;
+        }
+      }
+      have_hdr_host = true;
+    }
+#ifdef COOKIE_SUPPORT
+    else if (MHD_str_equal_caseless_s_bin_n_ (MHD_HTTP_HEADER_COOKIE,
+                                              pos->header,
+                                              pos->header_size))
+    {
+      if (MHD_PARSE_COOKIE_NO_MEMORY == parse_cookie_header (c,
+                                                             pos->value,
+                                                             pos->value_size))
+      {
+        handle_req_cookie_no_space (c);
         return;
       }
-      else
-      {
-        /* Must close connection after reply to prevent potential attack */
-        connection->keepalive = MHD_CONN_MUST_CLOSE;
-#ifdef HAVE_MESSAGES
-        MHD_DLOG (connection->daemon,
-                  _ ("The 'Content-Length' request header is ignored "
-                     "as chunked Transfer-Encoding is used "
-                     "for this request.\n"));
-#endif /* HAVE_MESSAGES */
-      }
     }
-    connection->rq.have_chunked_upload = true;
-    connection->rq.remaining_upload_size = MHD_SIZE_UNKNOWN;
-  }
-  else /* was: transfer encoding set */
-  {
-    bool found = false;
-    struct MHD_HTTP_Req_Header *pos;
+#endif /* COOKIE_SUPPORT */
+    else if (MHD_str_equal_caseless_s_bin_n_ (MHD_HTTP_HEADER_CONTENT_LENGTH,
+                                              pos->header,
+                                              pos->header_size))
+    {
+      const char *clen;
+      size_t val_len;
+      size_t num_digits;
+      uint64_t decoded_val;
 
-    for (pos = connection->rq.headers_received; NULL != pos; pos = pos->next)
-      if ( (0 != (pos->kind & MHD_HEADER_KIND)) &&
-           (MHD_str_equal_caseless_s_bin_n_ (MHD_HTTP_HEADER_CONTENT_LENGTH,
-                                             pos->header,
-                                             pos->header_size)) )
+      val_len = pos->value_size;
+      clen = pos->value;
+
+      mhd_assert ('\0' == clen[val_len]);
+
+      if ((have_cntn_len)
+          && (0 < c->daemon->client_discipline))
       {
-        const char *clen;
-        size_t val_len;
-        size_t num_digits;
+        transmit_error_response_static (c,
+                                        MHD_HTTP_BAD_REQUEST,
+                                        REQUEST_AMBIGUOUS_CONTENT_LENGTH);
+        return;
+      }
 
-        if (found &&
-            (0 <= connection->daemon->client_discipline))
+      num_digits = MHD_str_to_uint64_n_ (clen,
+                                         val_len,
+                                         &decoded_val);
+
+      if ((0 == num_digits) ||
+          (val_len != num_digits) ||
+          (MHD_SIZE_UNKNOWN == decoded_val))
+      { /* Bad or too large value */
+
+        if (have_cntn_len)
         {
-          /* more than one header, bad */
-          transmit_error_response_static (connection,
+          transmit_error_response_static (c,
                                           MHD_HTTP_BAD_REQUEST,
                                           REQUEST_AMBIGUOUS_CONTENT_LENGTH);
           return;
         }
-        found = true;
-        val_len = pos->value_size;
-        clen = pos->value;
-        num_digits = MHD_str_to_uint64_n_ (clen,
-                                           val_len,
-                                           &connection->rq.remaining_upload_size
-                                           );
 
-        if (((0 == num_digits) &&
-             (0 != val_len) &&
-             ('0' <= clen[0]) && ('9' >= clen[0]))
-            || (MHD_SIZE_UNKNOWN == connection->rq.remaining_upload_size))
+        if ((val_len != num_digits)
+            || ('0' > clen[0]) || ('9' < clen[0]))
         {
-          connection->rq.remaining_upload_size = 0;
 #ifdef HAVE_MESSAGES
-          MHD_DLOG (connection->daemon,
-                    _ ("Too large value of 'Content-Length' header. " \
+          MHD_DLOG (c->daemon,
+                    _ ("Malformed 'Content-Length' header. " \
                        "Closing connection.\n"));
 #endif
-          transmit_error_response_static (connection,
-                                          MHD_HTTP_CONTENT_TOO_LARGE,
-                                          REQUEST_CONTENTLENGTH_TOOLARGE);
-          return;
-        }
-        if ( (val_len != num_digits) ||
-             (0 == num_digits) )
-        {
-          connection->rq.remaining_upload_size = 0;
-#ifdef HAVE_MESSAGES
-          MHD_DLOG (connection->daemon,
-                    _ ("Failed to parse 'Content-Length' header. " \
-                       "Closing connection.\n"));
-#endif
-          transmit_error_response_static (connection,
+          transmit_error_response_static (c,
                                           MHD_HTTP_BAD_REQUEST,
                                           REQUEST_CONTENTLENGTH_MALFORMED);
           return;
         }
-      } /* for all HTTP headers */
-  } /* was: else: transfer encoding is not set */
+
+#ifdef HAVE_MESSAGES
+        MHD_DLOG (c->daemon,
+                  _ ("Too large value of 'Content-Length' header. " \
+                     "Closing connection.\n"));
+#endif
+        transmit_error_response_static (c,
+                                        MHD_HTTP_CONTENT_TOO_LARGE,
+                                        REQUEST_CONTENTLENGTH_TOOLARGE);
+        return;
+      }
+
+      if ((have_cntn_len) &&
+          (c->rq.remaining_upload_size != decoded_val))
+      {
+        if (-3 < c->daemon->client_discipline)
+        {
+          transmit_error_response_static (c,
+                                          MHD_HTTP_BAD_REQUEST,
+                                          REQUEST_AMBIGUOUS_CONTENT_LENGTH);
+          return;
+        }
+        /* The HTTP framing is broken.
+           Use smallest (safest) length value and force-close
+           after processing of this request. */
+        if (c->rq.remaining_upload_size > decoded_val)
+          c->rq.remaining_upload_size = decoded_val;
+        c->keepalive = MHD_CONN_MUST_CLOSE;
+      }
+      else
+        c->rq.remaining_upload_size = decoded_val;
+
+      have_cntn_len = true;
+    }
+    else if (MHD_str_equal_caseless_s_bin_n_ (
+               MHD_HTTP_HEADER_TRANSFER_ENCODING,
+               pos->header,
+               pos->header_size))
+    {
+
+      if (MHD_HTTP_VER_1_1 > c->rq.http_ver)
+      {
+        /* RFC 9112, 6.1, last paragraph */
+        if (0 < c->daemon->client_discipline)
+        {
+          transmit_error_response_static (c,
+                                          MHD_HTTP_BAD_REQUEST,
+                                          REQUEST_HTTP1_0_TR_ENCODING);
+          return;
+        }
+        /* HTTP framing potentially broken */
+        c->keepalive = MHD_CONN_MUST_CLOSE;
+      }
+
+      if (c->rq.have_chunked_upload
+          || ! MHD_str_equal_caseless_s_bin_n_ ("chunked",
+                                                pos->value,
+                                                pos->value_size))
+      {
+        transmit_error_response_static (c,
+                                        c->rq.have_chunked_upload ?
+                                        MHD_HTTP_BAD_REQUEST :
+                                        MHD_HTTP_NOT_IMPLEMENTED,
+                                        REQUEST_UNSUPPORTED_TR_ENCODING);
+        return;
+      }
+      c->rq.have_chunked_upload = true;
+      c->rq.remaining_upload_size = MHD_SIZE_UNKNOWN;
+    }
+  }
+
+  if (c->rq.have_chunked_upload && have_cntn_len)
+  {
+    if (0 < c->daemon->client_discipline)
+    {
+      transmit_error_response_static (c,
+                                      MHD_HTTP_BAD_REQUEST,
+                                      REQUEST_LENGTH_WITH_TR_ENCODING);
+      return;
+    }
+    else
+    {
+#ifdef HAVE_MESSAGES
+      MHD_DLOG (c->daemon,
+                _ ("The 'Content-Length' request header is ignored "
+                   "as chunked Transfer-Encoding is set in the "
+                   "same request.\n"));
+#endif /* HAVE_MESSAGES */
+      c->rq.remaining_upload_size = MHD_SIZE_UNKNOWN;
+      /* Must close connection after reply to prevent potential attack */
+      c->keepalive = MHD_CONN_MUST_CLOSE;
+    }
+  }
+
+  mhd_assert (! c->rq.have_chunked_upload ||
+              (MHD_SIZE_UNKNOWN == c->rq.remaining_upload_size));
+  mhd_assert ((0 == c->rq.remaining_upload_size) ||
+              have_cntn_len || c->rq.have_chunked_upload);
+
+  if (! have_hdr_host
+      && (MHD_IS_HTTP_VER_1_1_COMPAT (c->rq.http_ver))
+      && (-3 < c->daemon->client_discipline))
+  {
+#ifdef HAVE_MESSAGES
+    MHD_DLOG (c->daemon,
+              _ ("Received HTTP/1.1 request without `Host' header.\n"));
+#endif
+    transmit_error_response_static (c,
+                                    MHD_HTTP_BAD_REQUEST,
+                                    REQUEST_LACKS_HOST);
+    return;
+  }
 }
 
 
