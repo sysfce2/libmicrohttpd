@@ -1,3 +1,8 @@
+Thu Apr 16 10:36:54 AM CEST 2026
+    Also ensuring other HTTP client headers that 
+    should be unique are unique.
+    Releasing GNU libmicrohttpd 1.0.5. -EG/CG
+
 Mon Apr 13 11:39:04 AM CEST 2026
     Fixed bug where additional "Content-Length" headers were
     ignored instead of rejecting the request, fixing a 

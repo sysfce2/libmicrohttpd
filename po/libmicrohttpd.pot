@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU libmicrohttpd 1.0.3\n"
+"Project-Id-Version: GNU libmicrohttpd 1.0.5\n"
 "Report-Msgid-Bugs-To: libmicrohttpd@gnu.org\n"
-"POT-Creation-Date: 2026-04-02 00:17+0200\n"
+"POT-Creation-Date: 2026-04-16 10:37+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,381 +17,381 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/microhttpd/connection.c:633
+#: src/microhttpd/connection.c:665
 msgid "The operation would block, retry later"
 msgstr ""
 
-#: src/microhttpd/connection.c:635
+#: src/microhttpd/connection.c:667
 msgid "The connection was forcibly closed by remote peer"
 msgstr ""
 
-#: src/microhttpd/connection.c:637
+#: src/microhttpd/connection.c:669
 msgid "The socket is not connected"
 msgstr ""
 
-#: src/microhttpd/connection.c:639
+#: src/microhttpd/connection.c:671
 msgid "Not enough system resources to serve the request"
 msgstr ""
 
-#: src/microhttpd/connection.c:641
+#: src/microhttpd/connection.c:673
 msgid "Bad FD value"
 msgstr ""
 
-#: src/microhttpd/connection.c:643
+#: src/microhttpd/connection.c:675
 msgid "Argument value is invalid"
 msgstr ""
 
-#: src/microhttpd/connection.c:645
+#: src/microhttpd/connection.c:677
 msgid "Argument value is not supported"
 msgstr ""
 
-#: src/microhttpd/connection.c:647
+#: src/microhttpd/connection.c:679
 msgid "The socket is no longer available for sending"
 msgstr ""
 
-#: src/microhttpd/connection.c:649
+#: src/microhttpd/connection.c:681
 msgid "TLS encryption or decryption error"
 msgstr ""
 
-#: src/microhttpd/connection.c:654
+#: src/microhttpd/connection.c:686
 msgid "Not an error code"
 msgstr ""
 
-#: src/microhttpd/connection.c:657
+#: src/microhttpd/connection.c:689
 msgid "Wrong error code value"
 msgstr ""
 
-#: src/microhttpd/connection.c:1364 src/microhttpd/connection.c:1383
+#: src/microhttpd/connection.c:1401 src/microhttpd/connection.c:1420
 #: src/microhttpd/daemon.c:3280 src/microhttpd/daemon.c:4107
 #: src/microhttpd/daemon.c:8992
 msgid "Failed to remove FD from epoll set.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:1477 src/microhttpd/connection.c:1586
+#: src/microhttpd/connection.c:1514 src/microhttpd/connection.c:1623
 msgid "Closing connection (out of memory)."
 msgstr ""
 
-#: src/microhttpd/connection.c:1522
+#: src/microhttpd/connection.c:1559
 msgid "Closing connection (application reported error generating data)."
 msgstr ""
 
-#: src/microhttpd/connection.c:1650
+#: src/microhttpd/connection.c:1687
 msgid "No callback for the chunked data."
 msgstr ""
 
-#: src/microhttpd/connection.c:1667
+#: src/microhttpd/connection.c:1704
 msgid "Closing connection (application error generating response)."
 msgstr ""
 
-#: src/microhttpd/connection.c:1692
+#: src/microhttpd/connection.c:1729
 msgid "Closing connection (application returned more data than requested)."
 msgstr ""
 
-#: src/microhttpd/connection.c:2322
+#: src/microhttpd/connection.c:2359
 #, c-format
 msgid ""
 "This reply with response code %u cannot use reply body. Non-empty response "
 "body is ignored and not used.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:2330
+#: src/microhttpd/connection.c:2367
 #, c-format
 msgid ""
 "This reply with response code %u cannot use reply body. Application defined "
 "\"Content-Length\" header violatesHTTP specification.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:2848
+#: src/microhttpd/connection.c:2885
 #, c-format
 msgid ""
 "Error processing request (HTTP response code is %u ('%s')). Closing "
 "connection.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:2857
+#: src/microhttpd/connection.c:2894
 msgid "Too late to send an error response, response is being sent already.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:2863
+#: src/microhttpd/connection.c:2900
 msgid "Too late for error response."
 msgstr ""
 
-#: src/microhttpd/connection.c:2892
+#: src/microhttpd/connection.c:2929
 msgid "Failed to create error response.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:2939
+#: src/microhttpd/connection.c:2976
 msgid "Closing connection (failed to queue error response)."
 msgstr ""
 
-#: src/microhttpd/connection.c:2971
+#: src/microhttpd/connection.c:3008
 msgid "Closing connection (failed to create error response header)."
 msgstr ""
 
-#: src/microhttpd/connection.c:3505
+#: src/microhttpd/connection.c:3542
 msgid ""
 "No space left in the read buffer when receiving the initial part of the "
 "request line."
 msgstr ""
 
-#: src/microhttpd/connection.c:3525
+#: src/microhttpd/connection.c:3562
 msgid ""
 "No space left in the read buffer when receiving the URI in the request line. "
 "The request uses non-standard HTTP request method token."
 msgstr ""
 
-#: src/microhttpd/connection.c:3802
+#: src/microhttpd/connection.c:3839
 msgid "Invalid TLS state value.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:3810 src/microhttpd/connection.c:6708
-#: src/microhttpd/connection.c:6806 src/microhttpd/connection.c:7405
+#: src/microhttpd/connection.c:3847 src/microhttpd/connection.c:6822
+#: src/microhttpd/connection.c:6920 src/microhttpd/connection.c:7519
 #, c-format
 msgid "In function %s handling connection at state: %s\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:3960
+#: src/microhttpd/connection.c:3997
 msgid "Not enough memory in pool to allocate header record!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:4251
+#: src/microhttpd/connection.c:4281
 msgid ""
 "The Cookie header has been parsed, but it is not fully compliant with the "
 "standard.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:4266
+#: src/microhttpd/connection.c:4296
 msgid "The Cookie header has been ignored as it contains malformed data.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:4273
+#: src/microhttpd/connection.c:4303
 msgid ""
 "The Cookie header has been only partially parsed as it contains malformed "
 "data.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:4280
+#: src/microhttpd/connection.c:4310
 msgid "The Cookie header has malformed data.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:4286
+#: src/microhttpd/connection.c:4316
 msgid "Not enough memory in the connection pool to parse client cookies!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:4449 src/microhttpd/connection.c:4706
+#: src/microhttpd/connection.c:4479 src/microhttpd/connection.c:4736
 msgid "Application reported internal error, closing connection."
 msgstr ""
 
-#: src/microhttpd/connection.c:4713 src/microhttpd/postprocessor.c:56
+#: src/microhttpd/connection.c:4743 src/microhttpd/postprocessor.c:56
 msgid "libmicrohttpd API violation.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:4730
+#: src/microhttpd/connection.c:4760
 msgid ""
 "WARNING: Access Handler Callback has not processed any upload data and "
 "connection is not suspended. This may result in hung connection.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:4822
-msgid "Received HTTP/1.1 request without `Host' header.\n"
+#: src/microhttpd/connection.c:4922
+msgid "Malformed 'Content-Length' header. Closing connection.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:4875
-msgid ""
-"The 'Content-Length' request header is ignored as chunked Transfer-Encoding "
-"is used for this request.\n"
-msgstr ""
-
-#: src/microhttpd/connection.c:4907
+#: src/microhttpd/connection.c:4933
 msgid "Too large value of 'Content-Length' header. Closing connection.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:4920
-msgid "Failed to parse 'Content-Length' header. Closing connection.\n"
+#: src/microhttpd/connection.c:5014
+msgid ""
+"The 'Content-Length' request header is ignored as chunked Transfer-Encoding "
+"is set in the same request.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:5079
+#: src/microhttpd/connection.c:5035
+msgid "Received HTTP/1.1 request without `Host' header.\n"
+msgstr ""
+
+#: src/microhttpd/connection.c:5193
 msgid "Too many meaningless extra empty lines received before the request"
 msgstr ""
 
-#: src/microhttpd/connection.c:5154
+#: src/microhttpd/connection.c:5268
 msgid "Bare CR characters are not allowed in the request line.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:5181
+#: src/microhttpd/connection.c:5295
 msgid "Bare LF characters are not allowed in the request line.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:5306
+#: src/microhttpd/connection.c:5420
 msgid "The request line is malformed.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:5369
+#: src/microhttpd/connection.c:5483
 msgid "The request line starts with a whitespace.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:5407
+#: src/microhttpd/connection.c:5521
 msgid "The request line has more than two whitespaces.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:5496
+#: src/microhttpd/connection.c:5610
 msgid "Invalid character is in the request line.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:5505
+#: src/microhttpd/connection.c:5619
 msgid "The NUL character is in the request line.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:5554
+#: src/microhttpd/connection.c:5668
 msgid ""
 "The request has whitespace character is in the URI and the URI is too large "
 "to send automatic redirect to fixed URI.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:5618
+#: src/microhttpd/connection.c:5732
 msgid "The request has whitespace character is in the URI.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6126
+#: src/microhttpd/connection.c:6240
 msgid "Whitespace-prefixed first header line has been skipped.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6438
+#: src/microhttpd/connection.c:6552
 #, c-format
 msgid "Failed to allocate memory in the connection memory pool to store %s.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6440 src/microhttpd/connection.c:6504
-#: src/microhttpd/connection.c:6511
+#: src/microhttpd/connection.c:6554 src/microhttpd/connection.c:6618
+#: src/microhttpd/connection.c:6625
 msgid "header"
 msgstr ""
 
-#: src/microhttpd/connection.c:6440 src/microhttpd/connection.c:6504
-#: src/microhttpd/connection.c:6511
+#: src/microhttpd/connection.c:6554 src/microhttpd/connection.c:6618
+#: src/microhttpd/connection.c:6625
 msgid "footer"
 msgstr ""
 
-#: src/microhttpd/connection.c:6486
+#: src/microhttpd/connection.c:6600
 #, c-format
 msgid "One bare CR character has been replaced with space in %s.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6489
+#: src/microhttpd/connection.c:6603
 msgid "the request line or in the request headers"
 msgstr ""
 
-#: src/microhttpd/connection.c:6490
+#: src/microhttpd/connection.c:6604
 msgid "the request footers"
 msgstr ""
 
-#: src/microhttpd/connection.c:6495
+#: src/microhttpd/connection.c:6609
 #, c-format
 msgid ""
 "%<PRIu64> bare CR characters have been replaced with spaces in the request "
 "line and/or in the request %s.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6498
+#: src/microhttpd/connection.c:6612
 msgid "headers"
 msgstr ""
 
-#: src/microhttpd/connection.c:6498
+#: src/microhttpd/connection.c:6612
 msgid "footers"
 msgstr ""
 
-#: src/microhttpd/connection.c:6503
+#: src/microhttpd/connection.c:6617
 #, c-format
 msgid "One %s line without colon has been skipped.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6509
+#: src/microhttpd/connection.c:6623
 #, c-format
 msgid "%<PRIu64> %s lines without colons has been skipped.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6657
+#: src/microhttpd/connection.c:6771
 msgid "Socket has been disconnected when reading request.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6669
+#: src/microhttpd/connection.c:6783
 #, c-format
 msgid "Connection socket is closed when reading request due to the error: %s\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6687
+#: src/microhttpd/connection.c:6801
 msgid "Connection was closed by remote side with incomplete request.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6833
+#: src/microhttpd/connection.c:6947
 #, c-format
 msgid "Failed to send data in request for %s.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6842
+#: src/microhttpd/connection.c:6956
 #, c-format
 msgid "Sent 100 continue response: `%.*s'\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6919
+#: src/microhttpd/connection.c:7033
 #, c-format
 msgid ""
 "Failed to send the response headers for the request for `%s'. Error: %s\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6985
+#: src/microhttpd/connection.c:7099
 msgid "Data offset exceeds limit.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:6995
+#: src/microhttpd/connection.c:7109
 #, c-format
 msgid "Sent %d-byte DATA response: `%.*s'\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:7012
+#: src/microhttpd/connection.c:7126
 #, c-format
 msgid "Failed to send the response body for the request for `%s'. Error: %s\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:7044
+#: src/microhttpd/connection.c:7158
 #, c-format
 msgid ""
 "Failed to send the chunked response body for the request for `%s'. Error: "
 "%s\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:7080
+#: src/microhttpd/connection.c:7194
 #, c-format
 msgid "Failed to send the footers for the request for `%s'. Error: %s\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:7109
+#: src/microhttpd/connection.c:7223
 msgid "Internal error.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:7148
+#: src/microhttpd/connection.c:7262
 #, c-format
 msgid "Detected system clock %u milliseconds jump back.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:7155
+#: src/microhttpd/connection.c:7269
 #, c-format
 msgid "Detected too large system clock %<PRIu64> milliseconds jump back.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:7237
+#: src/microhttpd/connection.c:7351
 msgid ""
 "Failed to signal end of connection via inter-thread communication channel.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:7551
+#: src/microhttpd/connection.c:7665
 msgid "Closing connection (failed to create response header).\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:7685
+#: src/microhttpd/connection.c:7799
 msgid "Closing connection (failed to create response footer)."
 msgstr ""
 
-#: src/microhttpd/connection.c:7796 src/microhttpd/daemon.c:2985
+#: src/microhttpd/connection.c:7910 src/microhttpd/daemon.c:2985
 #: src/microhttpd/daemon.c:5543 src/microhttpd/daemon.c:5576
 #: src/microhttpd/daemon.c:7465 src/microhttpd/daemon.c:7484
 #: src/microhttpd/response.c:2073 src/microhttpd/response.c:2099
@@ -399,85 +399,85 @@ msgstr ""
 msgid "Call to epoll_ctl failed: %s\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:7960 src/microhttpd/daemon.c:6690
+#: src/microhttpd/connection.c:8074 src/microhttpd/daemon.c:6690
 #, c-format
 msgid ""
 "The specified connection timeout (%u) is too large. Maximum allowed value "
 "(%<PRIu64>) will be used instead.\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8076
+#: src/microhttpd/connection.c:8190
 msgid "Attempted to queue response on wrong thread!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8100
+#: src/microhttpd/connection.c:8214
 msgid ""
 "Attempted 'upgrade' connection on daemon without MHD_ALLOW_UPGRADE option!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8109
+#: src/microhttpd/connection.c:8223
 msgid "Application used invalid status code for 'upgrade' response!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8118
+#: src/microhttpd/connection.c:8232
 msgid "Application used invalid response without \"Connection\" header!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8132
+#: src/microhttpd/connection.c:8246
 msgid ""
 "Application used invalid response without \"upgrade\" token in "
 "\"Connection\" header!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8142
+#: src/microhttpd/connection.c:8256
 msgid "Connection \"Upgrade\" can be used only with HTTP/1.1 connections!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8156
+#: src/microhttpd/connection.c:8270
 msgid ""
 "Application used status code 101 \"Switching Protocols\" with non-'upgrade' "
 "response!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8164
+#: src/microhttpd/connection.c:8278
 msgid ""
 "Application used status code 101 \"Switching Protocols\", but this MHD was "
 "built without \"Upgrade\" support!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8175
+#: src/microhttpd/connection.c:8289
 #, c-format
 msgid ""
 "Refused wrong status code (%u). HTTP requires three digits status code!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8187
+#: src/microhttpd/connection.c:8301
 #, c-format
 msgid ""
 "Wrong status code (%u) refused. HTTP/1.0 clients do not support 1xx status "
 "codes!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8198
+#: src/microhttpd/connection.c:8312
 #, c-format
 msgid ""
 "Wrong status code (%u) refused. HTTP/1.0 reply mode does not support 1xx "
 "status codes!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8210
+#: src/microhttpd/connection.c:8324
 #, c-format
 msgid ""
 "Successful (%u) response code cannot be used to answer \"CONNECT\" request!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8222
+#: src/microhttpd/connection.c:8336
 msgid ""
 "HEAD-only response cannot be used when the request requires reply body to be "
 "sent!\n"
 msgstr ""
 
-#: src/microhttpd/connection.c:8233
+#: src/microhttpd/connection.c:8347
 msgid ""
 "The response has application-defined \"Content-Length\" header. The reply to "
 "the request will be not HTTP-compliant and may result in hung connection or "
